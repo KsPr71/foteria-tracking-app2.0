@@ -30,6 +30,12 @@ const MAPPING = {
   "gearshape.fill": "settings",
   "xmark": "close",
   "arrow.left": "arrow-back",
+  // question mark variants
+  "questionmark": "help",
+  "questionmark.circle": "help",
+  "questionmark.circle.fill": "help",
+  "question-mark": "help",
+  "question-mark.circle": "help",
 } as IconMapping;
 
 /**

@@ -3,8 +3,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Platform } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { Platform } from "react-native";
 
 export default function TabLayout() {
   const colors = useColors();
@@ -35,6 +35,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="FAQ"
+        options={{
+          title: "FAQ",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="questionmark.circle" color={color} />,
+        }}
+      />
+
     </Tabs>
   );
 }

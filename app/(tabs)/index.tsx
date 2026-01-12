@@ -1,25 +1,25 @@
-import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  Alert,
-  Platform,
-} from "react-native";
-import * as Haptics from "expo-haptics";
+import { Footer } from "@/components/footer";
 import { ScreenContainer } from "@/components/screen-container";
 import { TrackingTimeline } from "@/components/tracking-timeline";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Footer } from "@/components/footer";
 import { useColors } from "@/hooks/use-colors";
-import { OrderService } from "@/lib/order-service";
 import { formatOrderNumber, isOrderNumberComplete } from "@/lib/order-mask";
+import { OrderService } from "@/lib/order-service";
 import type { Order } from "@/types/order";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
   const colors = useColors();
@@ -218,7 +218,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   searchContainer: {
     flex: 1,
     gap: 24,

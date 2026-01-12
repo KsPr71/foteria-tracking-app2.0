@@ -3,7 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface FAQItem {
   id: number;
@@ -75,12 +75,13 @@ export default function FAQ() {
 
   return (
     <ScreenContainer className="p-4">
-      <ScrollView contentContainerStyle={{ gap: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <View style={{ width: 44, height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: colors.primary }}>
-            <IconSymbol name="gearshape.fill" size={22} color="#fff" />
+      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
+        <View style={styles.headerRow}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.primary }]}>
+            <IconSymbol name="questionmark.circle" size={42} color="#fff" />
           </View>
-          <View>
+          <View style={styles.headerText}>
+            <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
             <ThemedText type="title">FAQ</ThemedText>
             <ThemedText type="subtitle">Preguntas frecuentes</ThemedText>
           </View>
@@ -90,40 +91,44 @@ export default function FAQ() {
           {FAQ_ITEMS.map((item) => {
             const isOpen = openItems.has(item.id);
             return (
-              <View key={item.id} className="mb-3">
+              <View key={item.id} style={{ marginBottom: 12 }}>
                 <TouchableOpacity
                   onPress={() => toggleItem(item.id)}
-                  activeOpacity={0.8}
-                  style={{
-                    paddingVertical: 14,
-                    paddingHorizontal: 12,
-                    backgroundColor: colors.surface,
-                    borderRadius: 10,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
+                  activeOpacity={0.85}
+                  style={[
+                    styles.questionCard,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
                 >
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <ThemedText type="defaultSemiBold">{item.question}</ThemedText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+
+                    <View style={{ flex: 1, paddingLeft: 12 }}>
+                      <ThemedText type="defaultSemiBold">{item.question}</ThemedText>
+                    </View>
                   </View>
 
                   <IconSymbol name={isOpen ? "chevron.up" : "chevron.down"} size={22} color={colors.muted} />
                 </TouchableOpacity>
 
-                {isOpen && (
-                  <View style={{ marginTop: 8, padding: 12, backgroundColor: colors.surface, borderRadius: 8, borderWidth: 1, borderColor: colors.border }}>
-                    <ThemedText type="default">{item.answer}</ThemedText>
-                  </View>
-                )}
+                <View
+                  style={{
+                    marginTop: 8,
+                    padding: 14,
+                    backgroundColor: colors.surface,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: isOpen ? colors.primary : colors.border,
+                    display: isOpen ? 'flex' : 'none',
+                  }}
+                >
+                  <ThemedText type="default">{item.answer}</ThemedText>
+                </View>
               </View>
             );
           })}
         </View>
 
-        <View style={{ marginTop: 8 }}>
+        <View style={{ marginTop: 8, borderColor: colors.primary, borderTopWidth: 1, borderWidth: 1, paddingTop: 12, paddingHorizontal: 8, backgroundColor: colors.surface, borderRadius: 12, paddingBottom: 16 }}>
           <ThemedText type="subtitle">¿Aún tienes preguntas?</ThemedText>
           <ThemedText>
             Si no encontraste la respuesta que buscas, nuestro equipo de atención al cliente está aquí para ayudarte.
@@ -137,3 +142,44 @@ export default function FAQ() {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  headerText: {
+    justifyContent: 'center',
+  },
+  brand: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  questionCard: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+  },
+  qIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+

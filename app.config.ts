@@ -1,6 +1,5 @@
-// Load environment variables with proper priority (system > .env)
-import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
+import "./scripts/load-env.js";
 
 // Bundle ID format: space.manus.<project_name_dots>.<timestamp>
 // e.g., "my-app" created at 2024-01-15 10:30:45 -> "space.manus.my.app.t20240115103045"
@@ -24,13 +23,14 @@ const env = {
 
 const config: ExpoConfig = {
   name: env.appName,
-  slug: env.appSlug,
+  slug: "foteria-tracking-20",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  owner: "kspr71", // Agregado aquí
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
@@ -105,6 +105,11 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
   },
+  extra: {
+    eas: {
+      projectId: "0efddc76-a27f-4b43-bcfc-8ecefe5e363e"
+    }
+  }
 };
 
 export default config;

@@ -24,6 +24,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
+  
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",

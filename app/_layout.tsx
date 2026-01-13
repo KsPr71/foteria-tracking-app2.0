@@ -10,10 +10,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 import {
-    SafeAreaFrameContext,
-    SafeAreaInsetsContext,
-    SafeAreaProvider,
-    initialWindowMetrics,
+  SafeAreaFrameContext,
+  SafeAreaInsetsContext,
+  SafeAreaProvider,
+  initialWindowMetrics,
 } from "react-native-safe-area-context";
 
 import { WhatsAppButton } from "@/components/whatsapp-button";
@@ -89,6 +89,13 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="admin" />
             <Stack.Screen name="oauth/callback" />
+            <Stack.Screen 
+              name="modal" 
+              options={{ 
+                presentation: "modal",
+                headerShown: false,
+              }} 
+            />
           </Stack>
             <StatusBar style="auto" />
             <WhatsAppButton />

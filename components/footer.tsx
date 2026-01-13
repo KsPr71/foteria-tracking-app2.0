@@ -1,6 +1,8 @@
 import { useColors } from "@/hooks/use-colors";
+import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const SUPABASE_URL =
   "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json";
@@ -40,12 +42,22 @@ export function Footer() {
     return fechaFin;
   })();
 
+  const handleAboutPress = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push("/modal");
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {formatted && (
         <Text style={[styles.updatedText, { color: colors.muted }]}>Actualizado: {formatted}</Text>
       )}
-      <Text style={[styles.text, { color: colors.muted }]}>© {currentYear} La Fotería. Todos los derechos reservados.</Text>
+      <TouchableOpacity onPress={handleAboutPress} activeOpacity={0.7}>
+        <Text style={[styles.text, { color: colors.muted }]}>© {currentYear} La Fotería. Todos los derechos reservados.</Text>
+        <Text style={[styles.aboutLink, { color: colors.primary }]}>Acerca de</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -66,5 +78,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     marginBottom: 6,
+  },
+  aboutLink: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 4,
+    textDecorationLine: "underline",
   },
 });

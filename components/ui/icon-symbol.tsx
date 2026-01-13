@@ -36,6 +36,18 @@ const MAPPING = {
   "questionmark.circle.fill": "help",
   "question-mark": "help",
   "question-mark.circle": "help",
+  // info and about
+  "info.circle": "info",
+  "info.circle.fill": "info",
+  // app and version
+  "app.fill": "apps",
+  "number": "tag",
+  // contact icons
+  "envelope.fill": "email",
+  "phone.fill": "phone",
+  "mappin.circle.fill": "place",
+  // arrows
+  "arrow.clockwise": "refresh",
 } as IconMapping;
 
 /**

@@ -29,6 +29,7 @@ const MAPPING = {
   "checkmark.circle.fill": "check-circle",
   "gearshape.fill": "settings",
   "xmark": "close",
+  "xmark.circle.fill": "cancel",
   "arrow.left": "arrow-back",
   // question mark variants
   "questionmark": "help",

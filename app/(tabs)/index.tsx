@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [foundOrder, setFoundOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   const orderService = OrderService.getInstance();
   const trackedOrdersService = TrackedOrdersService.getInstance();
@@ -174,31 +176,60 @@ export default function HomeScreen() {
 
           {/* Formulario de búsqueda */}
           <View style={styles.searchForm}>
-            <Text style={[styles.label, { color: colors.foreground }]}>Número de orden</Text>
-            <View
-              style={[
-                styles.inputContainer,
-                { backgroundColor: colors.surface, borderColor: error ? colors.error : colors.border },
-              ]}
-            >
-              <IconSymbol name="magnifyingglass" size={20} color={colors.muted} />
-            <TextInput
-              style={[styles.input, { color: colors.foreground }]}
-              placeholder="01005-001-0003"
-              placeholderTextColor={colors.muted}
-              value={orderNumber}
-              onChangeText={(text) => {
-                const formatted = formatOrderNumber(text);
-                setOrderNumber(formatted);
-                setError(null);
-              }}
-              keyboardType="numeric"
-              autoCorrect={false}
-              returnKeyType="search"
-              onSubmitEditing={handleSearch}
-              editable={!isSearching}
-              maxLength={14}
-            />
+            <View style={styles.labelContainer}>
+              <Text style={[styles.label, { color: colors.foreground }]}>Número de orden</Text>
+              <TouchableOpacity
+                onPress={() => setShowHelpModal(true)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <IconSymbol name="questionmark.circle" size={16} color={colors.muted} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.searchRow}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { backgroundColor: colors.surface, borderColor: error ? colors.error : colors.border },
+                ]}
+              >
+                <TextInput
+                  style={[styles.input, { color: colors.foreground }]}
+                  placeholder="Número de Orden"
+                  placeholderTextColor={colors.muted}
+                  value={orderNumber}
+                  onChangeText={(text) => {
+                    const formatted = formatOrderNumber(text);
+                    setOrderNumber(formatted);
+                    setError(null);
+                  }}
+                  keyboardType="numeric"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearch}
+                  editable={!isSearching}
+                  maxLength={14}
+                />
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.searchButtonInline,
+                  { 
+                    backgroundColor: colors.primary,
+                    borderColor: error ? colors.error : colors.border,
+                  },
+                  isSearching && styles.searchButtonDisabled,
+                ]}
+                onPress={handleSearch}
+                disabled={isSearching}
+                activeOpacity={0.8}
+              >
+                {isSearching ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <IconSymbol name="magnifyingglass" size={20} color="#ffffff" />
+                )}
+              </TouchableOpacity>
             </View>
 
             {error && (
@@ -206,39 +237,45 @@ export default function HomeScreen() {
                 <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
               </View>
             )}
-
-            <TouchableOpacity
-              style={[
-                styles.searchButton,
-                { backgroundColor: colors.primary },
-                isSearching && styles.searchButtonDisabled,
-              ]}
-              onPress={handleSearch}
-              disabled={isSearching}
-              activeOpacity={0.8}
-            >
-              {isSearching ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <>
-                  <IconSymbol name="magnifyingglass" size={20} color="#ffffff" />
-                  <Text style={styles.searchButtonText}>Buscar orden</Text>
-                </>
-              )}
-            </TouchableOpacity>
           </View>
+
+          {/* Modal de ayuda */}
+          <Modal
+            visible={showHelpModal}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowHelpModal(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowHelpModal(false)}
+            >
+              <TouchableOpacity
+                style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: colors.foreground }]}>¿Cómo buscar tu orden?</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowHelpModal(false)}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <IconSymbol name="xmark.circle.fill" size={24} color={colors.muted} />
+                  </TouchableOpacity>
+                </View>
+                <Text style={[styles.modalText, { color: colors.muted }]}>
+                  Ingresa el número de orden que recibiste al finalizar tu sesión fotográfica. El formato es:{" "}
+                  <Text style={{ fontWeight: "600", color: colors.foreground }}>XXXXX-XXX-XXXX</Text>
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
 
           {/* Órdenes seguidas */}
           <TrackedOrdersList onOrderPress={handleTrackedOrderPress} />
-
-          {/* Ayuda */}
-          <View style={[styles.helpCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.helpTitle, { color: colors.foreground }]}>¿Cómo buscar tu orden?</Text>
-            <Text style={[styles.helpText, { color: colors.muted }]}>
-              Ingresa el número de orden que recibiste al finalizar tu sesión fotográfica. El formato es:{" "}
-              <Text style={{ fontWeight: "600" }}>XXXXX-XXX-XXXX</Text>
-            </Text>
-          </View>
         </View>
       </View>
       <Footer />
@@ -276,63 +313,85 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   searchForm: {
-    gap: 16,
+    gap: 12,
+  },
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
   },
   label: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: -8,
+  },
+  searchRow: {
+    flexDirection: "row",
+    gap: 0,
+    alignItems: "center",
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 2,
-    gap: 12,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+    borderWidth: 1,
+    borderRightWidth: 0,
+    minHeight: 48,
+    justifyContent: "center",
   },
   input: {
-    flex: 1,
     fontSize: 16,
-    paddingVertical: 4,
+    paddingVertical: 0,
+  },
+  searchButtonInline: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderLeftWidth: 0,
   },
   errorContainer: {
-    marginTop: -8,
+    marginTop: 4,
   },
   errorText: {
     fontSize: 14,
   },
-  searchButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    gap: 8,
-    marginTop: 8,
-  },
   searchButtonDisabled: {
     opacity: 0.6,
   },
-  searchButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  helpCard: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 400,
     borderRadius: 16,
     borderWidth: 1,
-    marginTop: 8,
+    padding: 20,
+    gap: 12,
   },
-  helpTitle: {
-    fontSize: 16,
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
     fontWeight: "600",
-    marginBottom: 8,
+    flex: 1,
   },
-  helpText: {
+  modalText: {
     fontSize: 14,
     lineHeight: 20,
   },

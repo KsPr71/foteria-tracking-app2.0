@@ -25,7 +25,7 @@ const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
   
-  version: "1.3.0",
+  version: "1.4.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -108,6 +108,12 @@ const config: ExpoConfig = {
         android: {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
         },
+      },
+    ],
+    [
+      "expo-background-fetch",
+      {
+        mode: "background",
       },
     ],
   ],

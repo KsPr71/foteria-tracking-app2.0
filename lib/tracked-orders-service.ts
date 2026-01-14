@@ -155,4 +155,34 @@ export class TrackedOrdersService {
     const tracked = await this.getTrackedOrders();
     return tracked.some((t) => t.orderNumber === orderNumber);
   }
+
+  /**
+   * Marca todas las órdenes como leídas (elimina todas las notificaciones)
+   */
+  async markAllOrdersAsRead(): Promise<void> {
+    try {
+      const tracked = await this.getTrackedOrders();
+      tracked.forEach((order) => {
+        order.hasUnreadChanges = false;
+      });
+      await AsyncStorage.setItem(TRACKED_ORDERS_KEY, JSON.stringify(tracked));
+    } catch (error) {
+      console.error("Error marking all orders as read:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina todos los datos de seguimiento almacenados localmente
+   */
+  async clearAllTrackedOrders(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(TRACKED_ORDERS_KEY);
+      // También eliminar estados si existen
+      await AsyncStorage.removeItem(TRACKED_ORDERS_STATES_KEY);
+    } catch (error) {
+      console.error("Error clearing all tracked orders:", error);
+      throw error;
+    }
+  }
 }

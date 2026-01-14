@@ -21,6 +21,9 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-run
 import { createTRPCClient, trpc } from "@/lib/trpc";
 import { NotificationsProvider, useNotifications } from "@/contexts/notifications-context";
 import { Snackbar } from "@/components/snackbar";
+// Importar el archivo de background tasks para que la tarea se defina antes de registrarse
+import "@/lib/background-tasks";
+import { registerBackgroundFetch } from "@/lib/background-tasks";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -39,6 +42,13 @@ export default function RootLayout() {
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
     initManusRuntime();
+  }, []);
+
+  // Registrar tarea de background fetch para actualizaciones automáticas
+  useEffect(() => {
+    registerBackgroundFetch().catch((error) => {
+      console.warn("Error registering background fetch:", error);
+    });
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {

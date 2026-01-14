@@ -4,7 +4,9 @@ import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
 
 interface TrackedOrdersListProps {
   onOrderPress: (orderNumber: string) => void;
@@ -31,6 +33,23 @@ export function TrackedOrdersList({ onOrderPress }: TrackedOrdersListProps) {
 
   const formatDate = (dateString: string) => {
     try {
+      // Parsear la fecha como fecha local para evitar problemas de zona horaria
+      // Si la fecha viene en formato YYYY-MM-DD, parsearla correctamente
+      const fechaParts = String(dateString).split("-");
+      if (fechaParts.length === 3) {
+        const year = parseInt(fechaParts[0], 10);
+        const month = parseInt(fechaParts[1], 10) - 1; // Los meses en JS son 0-indexed
+        const day = parseInt(fechaParts[2], 10);
+        const date = new Date(year, month, day);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString("es-ES", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        }
+      }
+      // Fallback: intentar parsear normalmente
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
       return date.toLocaleDateString("es-ES", {
@@ -48,13 +67,60 @@ export function TrackedOrdersList({ onOrderPress }: TrackedOrdersListProps) {
     return orderNumber.replace(/^Orden\s+/i, "");
   };
 
+  const handleClearAllData = useCallback(async () => {
+    Alert.alert(
+      "Eliminar datos de seguimiento",
+      "¿Estás seguro de que deseas eliminar todos los datos de seguimiento almacenados localmente? Esta acción no se puede deshacer.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            if (Platform.OS !== "web") {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            }
+
+            try {
+              await trackedOrdersService.clearAllTrackedOrders();
+              await loadTrackedOrders(); // Recargar para actualizar la UI
+              
+              if (Platform.OS !== "web") {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              }
+            } catch (error) {
+              console.error("Error clearing all tracked orders:", error);
+              Alert.alert("Error", "No se pudieron eliminar los datos de seguimiento");
+              if (Platform.OS !== "web") {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              }
+            }
+          },
+        },
+      ]
+    );
+  }, [trackedOrdersService, loadTrackedOrders]);
+
   if (trackedOrders.length === 0) {
     return null;
   }
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.foreground }]}>Órdenes seguidas</Text>
+      <View style={styles.titleContainer}>
+        <Text style={[styles.title, { color: colors.foreground }]}>Órdenes seguidas</Text>
+        <TouchableOpacity
+          onPress={handleClearAllData}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.clearButton}
+        >
+          <IconSymbol name="xmark.circle.fill" size={20} color={colors.muted} />
+        </TouchableOpacity>
+      </View>
       <ScrollView 
         style={styles.scrollContainer}
         contentContainerStyle={styles.ordersList}
@@ -114,13 +180,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     flex: 1,
   },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   title: {
     fontSize: 18,
     fontWeight: "600",
   },
+  clearButton: {
+    padding: 4,
+  },
   scrollContainer: {
     flex: 1,
-    maxHeight: 300,
+    maxHeight: 500,
   },
   ordersList: {
     gap: 12,

@@ -36,6 +36,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="refresh"
+        options={{
+          title: "Actualizar",
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="arrow.clockwise" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="FAQ"
         options={{
           title: "FAQ",

@@ -1,12 +1,20 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useMemo } from "react";
 import { Linking, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const PHONE = "5352708602"; // nacional sin +56 style, user requested +5352708602
 const MESSAGE = "Hola, necesito ayuda con mi orden";
 
 export function WhatsAppButton() {
   const encoded = useMemo(() => encodeURIComponent(MESSAGE), []);
+  const insets = useSafeAreaInsets();
+  
+  // Calcular posición: tab bar (56px) + padding (12 web, insets.bottom mobile) + footer height aproximado (90px) + espacio (16px)
+  const tabBarHeight = 56 + (Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8));
+  const footerHeight = 90; // Aproximado: padding + contenido
+  const spacing = 16;
+  const bottomPosition = tabBarHeight + footerHeight + spacing;
 
   const openChat = async () => {
     // Try the native whatsapp scheme first, then fallback to web wa.me
@@ -33,7 +41,7 @@ export function WhatsAppButton() {
   };
 
   return (
-    <View style={styles.container} pointerEvents="box-none">
+    <View style={[styles.container, { bottom: bottomPosition }]} pointerEvents="box-none">
       <TouchableOpacity
         accessibilityLabel="Contactar por WhatsApp"
         activeOpacity={0.85}
@@ -50,7 +58,6 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     right: 16,
-    bottom: Platform.OS === "web" ? 48 : 56,
     zIndex: 80,
   },
   button: {

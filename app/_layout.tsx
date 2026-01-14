@@ -19,6 +19,8 @@ import {
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { createTRPCClient, trpc } from "@/lib/trpc";
+import { NotificationsProvider, useNotifications } from "@/contexts/notifications-context";
+import { Snackbar } from "@/components/snackbar";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -79,29 +81,59 @@ export default function RootLayout() {
     };
   }, [initialInsets, initialFrame]);
 
+  const AppContent = () => {
+    const { snackbarMessage, snackbarVisible, setSnackbarVisible } = useNotifications();
+
+    // Log para debug
+    useEffect(() => {
+      if (snackbarMessage) {
+        console.log("[AppContent] Snackbar message:", snackbarMessage, "visible:", snackbarVisible);
+      }
+    }, [snackbarMessage, snackbarVisible]);
+
+    return (
+      <>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <trpc.Provider client={trpcClient} queryClient={queryClient}>
+            <QueryClientProvider client={queryClient}>
+              {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
+              {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="admin" />
+                <Stack.Screen name="oauth/callback" />
+                <Stack.Screen 
+                  name="modal" 
+                  options={{ 
+                    presentation: "modal",
+                    headerShown: false,
+                  }} 
+                />
+              </Stack>
+                <StatusBar style="auto" />
+                <WhatsAppButton />
+            </QueryClientProvider>
+          </trpc.Provider>
+        </GestureHandlerRootView>
+        {/* Snackbar fuera de todo para que esté en el nivel más alto */}
+        {snackbarMessage && (
+          <Snackbar
+            message={snackbarMessage}
+            visible={snackbarVisible}
+            onDismiss={() => {
+              console.log("[AppContent] Snackbar dismissed");
+              setSnackbarVisible(false);
+            }}
+          />
+        )}
+      </>
+    );
+  };
+
   const content = (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-          {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="admin" />
-            <Stack.Screen name="oauth/callback" />
-            <Stack.Screen 
-              name="modal" 
-              options={{ 
-                presentation: "modal",
-                headerShown: false,
-              }} 
-            />
-          </Stack>
-            <StatusBar style="auto" />
-            <WhatsAppButton />
-        </QueryClientProvider>
-      </trpc.Provider>
-    </GestureHandlerRootView>
+    <NotificationsProvider>
+      <AppContent />
+    </NotificationsProvider>
   );
 
   const shouldOverrideSafeArea = Platform.OS === "web";

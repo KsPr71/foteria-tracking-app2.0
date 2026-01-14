@@ -40,16 +40,38 @@ export class OrderService {
 
     // Fetch desde Supabase
     try {
-      const response = await fetch(SUPABASE_URL);
+      // Agregar timestamp a la URL para evitar caché del navegador y de Supabase
+      const cacheBuster = `?t=${Date.now()}&_=${Math.random()}`;
+      const url = `${SUPABASE_URL}${cacheBuster}`;
+      
+      console.log(`[OrderService] Fetching orders from server (forceRefresh: ${forceRefresh})`);
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: OrderData = await response.json();
+      console.log(`[OrderService] Received ${data.data?.length || 0} orders from server`);
+      
+      // Si es force refresh, limpiar el caché en memoria primero
+      if (forceRefresh) {
+        this.ordersCache = null;
+      }
+      
       this.ordersCache = data.data;
 
       // Guardar en caché
       await this.cacheOrders(data.data);
+      console.log(`[OrderService] Cache updated with ${data.data.length} orders`);
 
       return data.data;
     } catch (error) {
@@ -66,11 +88,21 @@ export class OrderService {
 
   /**
    * Busca una orden por su número
+   * @param orderNumber - Número de orden a buscar
+   * @param forceRefresh - Si es true, fuerza la actualización desde el servidor
    */
-  async findOrder(orderNumber: string): Promise<Order | null> {
-    const orders = await this.fetchOrders();
+  async findOrder(orderNumber: string, forceRefresh: boolean = false): Promise<Order | null> {
+    const orders = await this.fetchOrders(forceRefresh);
     const normalizedSearch = orderNumber.trim().toLowerCase();
-    return orders.find((order) => order.orden.toLowerCase() === normalizedSearch) || null;
+    const found = orders.find((order) => order.orden.toLowerCase() === normalizedSearch);
+    
+    if (found) {
+      console.log(`[OrderService] Found order: ${found.orden}, Estado: ${found.estado}, Cliente: ${found.cliente}`);
+    } else {
+      console.log(`[OrderService] Order not found: ${orderNumber}`);
+    }
+    
+    return found || null;
   }
 
   /**
@@ -126,17 +158,27 @@ export class OrderService {
   }
 
   /**
-   * Limpia el caché
+   * Limpia el caché (tanto en memoria como en AsyncStorage)
    */
   async clearCache(): Promise<void> {
+    // Limpiar caché en memoria
     this.ordersCache = null;
     try {
       await Promise.all([
         AsyncStorage.removeItem(CACHE_KEY),
         AsyncStorage.removeItem(CACHE_TIMESTAMP_KEY),
       ]);
+      console.log("Cache cleared successfully");
     } catch (error) {
       console.error("Error clearing cache:", error);
     }
+  }
+
+  /**
+   * Limpia solo el caché en memoria (útil para forzar refresh sin perder AsyncStorage)
+   */
+  clearMemoryCache(): void {
+    this.ordersCache = null;
+    console.log("Memory cache cleared");
   }
 }

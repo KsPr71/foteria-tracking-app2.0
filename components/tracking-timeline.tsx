@@ -1,10 +1,15 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
 import { StageItem } from "./stage-item";
 import { ProgressBar } from "./progress-bar";
 import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { Order, OrderStatus } from "@/types/order";
 import { STAGES } from "@/types/order";
+import { TrackedOrdersService } from "@/lib/tracked-orders-service";
+import { useState, useEffect } from "react";
+import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
 
 interface TrackingTimelineProps {
   order: Order;
@@ -13,6 +18,60 @@ interface TrackingTimelineProps {
 
 export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) {
   const colors = useColors();
+  const [isTracked, setIsTracked] = useState(false);
+  const trackedOrdersService = TrackedOrdersService.getInstance();
+
+  useEffect(() => {
+    checkIfTracked();
+    // Marcar la orden como vista cuando se muestra
+    markOrderAsRead();
+  }, [order.orden]);
+
+  const markOrderAsRead = async () => {
+    try {
+      await trackedOrdersService.markOrderAsRead(order.orden);
+      // Actualizar badge inmediatamente
+      const unreadCount = await trackedOrdersService.getUnreadChangesCount();
+      await Notifications.setBadgeCountAsync(unreadCount);
+    } catch (error) {
+      console.error("Error marking order as read:", error);
+    }
+  };
+
+  const checkIfTracked = async () => {
+    const tracked = await trackedOrdersService.isOrderTracked(order.orden);
+    setIsTracked(tracked);
+  };
+
+  const handleToggleTracking = async () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    try {
+      if (isTracked) {
+        await trackedOrdersService.removeTrackedOrder(order.orden);
+        setIsTracked(false);
+        // Actualizar badge
+        const unreadCount = await trackedOrdersService.getUnreadChangesCount();
+        await Notifications.setBadgeCountAsync(unreadCount);
+        Alert.alert("Éxito", "Ya no recibirás notificaciones de esta orden");
+      } else {
+        await trackedOrdersService.addTrackedOrder(order);
+        setIsTracked(true);
+        // Actualizar badge
+        const unreadCount = await trackedOrdersService.getUnreadChangesCount();
+        await Notifications.setBadgeCountAsync(unreadCount);
+        Alert.alert(
+          "Orden guardada",
+          "Recibirás notificaciones cuando el estado de esta orden cambie",
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling tracking:", error);
+      Alert.alert("Error", "No se pudo actualizar el rastreo de la orden");
+    }
+  };
 
   const getStageStatus = (stageId: OrderStatus): "completed" | "current" | "pending" => {
     if (stageId < order.estado) return "completed";
@@ -127,6 +186,33 @@ export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) 
         </View>
       )}
 
+      {/* Botón para guardar/quitar rastreo */}
+      <TouchableOpacity
+        style={[
+          styles.trackButton,
+          {
+            backgroundColor: isTracked ? colors.error : colors.surface,
+            borderColor: isTracked ? colors.error : colors.border,
+          },
+        ]}
+        onPress={handleToggleTracking}
+        activeOpacity={0.8}
+      >
+        <IconSymbol
+          name={isTracked ? "bell.slash.fill" : "bell.fill"}
+          size={20}
+          color={isTracked ? "#ffffff" : colors.primary}
+        />
+        <Text
+          style={[
+            styles.trackButtonText,
+            { color: isTracked ? "#ffffff" : colors.foreground },
+          ]}
+        >
+          {isTracked ? "Dejar de rastrear" : "Activar notificaciones"}
+        </Text>
+      </TouchableOpacity>
+
       {/* Botón para nueva búsqueda */}
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}
@@ -202,6 +288,21 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 12,
     fontWeight: "500",
+  },
+  trackButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 8,
+    borderWidth: 2,
+  },
+  trackButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
   button: {
     flexDirection: "row",

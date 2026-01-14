@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as DocumentPicker from "expo-document-picker";
@@ -126,56 +127,66 @@ export default function AdminScreen() {
   if (!isAuthenticated) {
     return (
       <ScreenContainer className="p-6">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={styles.container}>
-            <TouchableOpacity
-              style={[styles.backButton, { backgroundColor: colors.surface }]}
-              onPress={handleBack}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="arrow.left" size={24} color={colors.foreground} />
-            </TouchableOpacity>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.container}>
+              <TouchableOpacity
+                style={[styles.backButton, { backgroundColor: colors.surface }]}
+                onPress={handleBack}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="arrow.left" size={24} color={colors.foreground} />
+              </TouchableOpacity>
 
-            <View style={styles.loginContainer}>
-              <View style={styles.iconContainer}>
-                <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
-                  <IconSymbol name="gearshape.fill" size={40} color="#ffffff" />
+              <View style={styles.loginContainer}>
+                <View style={styles.iconContainer}>
+                  <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="gearshape.fill" size={40} color="#ffffff" />
+                  </View>
+                </View>
+
+                <Text style={[styles.title, { color: colors.foreground }]}>Panel de Administración</Text>
+                <Text style={[styles.subtitle, { color: colors.muted }]}>
+                  Ingresa la contraseña para acceder
+                </Text>
+
+                <View style={styles.form}>
+                  <TextInput
+                    style={[
+                      styles.passwordInput,
+                      { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border },
+                    ]}
+                    placeholder="Contraseña"
+                    placeholderTextColor={colors.muted}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    onSubmitEditing={handleLogin}
+                  />
+
+                  <TouchableOpacity
+                    style={[styles.loginButton, { backgroundColor: colors.primary }]}
+                    onPress={handleLogin}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.loginButtonText}>Acceder</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-
-              <Text style={[styles.title, { color: colors.foreground }]}>Panel de Administración</Text>
-              <Text style={[styles.subtitle, { color: colors.muted }]}>
-                Ingresa la contraseña para acceder
-              </Text>
-
-              <View style={styles.form}>
-                <TextInput
-                  style={[
-                    styles.passwordInput,
-                    { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border },
-                  ]}
-                  placeholder="Contraseña"
-                  placeholderTextColor={colors.muted}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                />
-
-                <TouchableOpacity
-                  style={[styles.loginButton, { backgroundColor: colors.primary }]}
-                  onPress={handleLogin}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.loginButtonText}>Acceder</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ScreenContainer>
     );
   }
@@ -290,6 +301,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
     paddingBottom: 60,
+    paddingTop: 40,
+    minHeight: 400,
   },
   iconContainer: {
     marginBottom: 16,

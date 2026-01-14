@@ -42,6 +42,7 @@ const MAPPING = {
   // app and version
   "app.fill": "apps",
   "number": "tag",
+  "calendar": "event",
   // contact icons
   "envelope.fill": "email",
   "phone.fill": "phone",

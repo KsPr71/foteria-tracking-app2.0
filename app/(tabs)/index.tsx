@@ -1,14 +1,16 @@
 import { Footer } from "@/components/footer";
 import { ScreenContainer } from "@/components/screen-container";
+import { TrackedOrdersList } from "@/components/tracked-orders-list";
 import { TrackingTimeline } from "@/components/tracking-timeline";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { formatOrderNumber, isOrderNumberComplete } from "@/lib/order-mask";
 import { OrderService } from "@/lib/order-service";
+import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import type { Order } from "@/types/order";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -29,6 +31,17 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const orderService = OrderService.getInstance();
+  const trackedOrdersService = TrackedOrdersService.getInstance();
+
+  // Guardar automáticamente cuando se encuentra una orden
+  useEffect(() => {
+    if (foundOrder) {
+      // Guardar la orden automáticamente para rastreo
+      trackedOrdersService.addTrackedOrder(foundOrder).catch((error) => {
+        console.error("Error auto-saving order:", error);
+      });
+    }
+  }, [foundOrder, trackedOrdersService]);
 
   const handleSearch = async () => {
     if (!orderNumber.trim()) {
@@ -50,9 +63,13 @@ export default function HomeScreen() {
     }
 
     try {
+      // Limpiar caché en memoria antes de buscar para asegurar datos frescos
+      orderService.clearMemoryCache();
+      
       // Agregar "Orden" al inicio para buscar
       const fullOrderNumber = `Orden ${orderNumber}`;
-      const order = await orderService.findOrder(fullOrderNumber);
+      // Forzar refresh para obtener los datos más recientes del servidor
+      const order = await orderService.findOrder(fullOrderNumber, true);
 
       if (order) {
         setFoundOrder(order);
@@ -86,23 +103,42 @@ export default function HomeScreen() {
     router.push("/admin");
   };
 
-  const handleRefreshData = async () => {
+  const handleTrackedOrderPress = useCallback(async (orderNumber: string) => {
     setIsSearching(true);
+    setError(null);
+
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
     try {
-      await orderService.clearCache();
-      Alert.alert("Éxito", "Datos actualizados correctamente");
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Limpiar caché en memoria antes de buscar para asegurar datos frescos
+      orderService.clearMemoryCache();
+      
+      // Buscar la orden (forzar refresh para obtener los datos más recientes)
+      const order = await orderService.findOrder(orderNumber, true);
+
+      if (order) {
+        setFoundOrder(order);
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else {
+        setError("Orden no encontrada. Verifica el número e intenta nuevamente.");
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
       }
-    } catch (error) {
-      Alert.alert("Error", "No se pudieron actualizar los datos");
+    } catch (err) {
+      console.error("Error searching order:", err);
+      setError("Error al buscar la orden. Verifica tu conexión e intenta nuevamente.");
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [orderService]);
 
   // Si se encontró una orden, mostrar el tracking
   if (foundOrder) {
@@ -119,7 +155,7 @@ export default function HomeScreen() {
   // Pantalla de búsqueda
   return (
     <ScreenContainer className="p-6">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={{ flex: 1 }}>
         <View style={styles.searchContainer}>
           {/* Header */}
           <View style={styles.header}>
@@ -192,16 +228,8 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Botón de actualizar datos */}
-          <TouchableOpacity
-            style={[styles.refreshButton, { backgroundColor: colors.primary }]}
-            onPress={handleRefreshData}
-            disabled={isSearching}
-            activeOpacity={0.8}
-          >
-            <IconSymbol name="arrow.clockwise" size={18} color="#ffffff" />
-            <Text style={styles.refreshButtonText}>Actualizar datos</Text>
-          </TouchableOpacity>
+          {/* Órdenes seguidas */}
+          <TrackedOrdersList onOrderPress={handleTrackedOrderPress} />
 
           {/* Ayuda */}
           <View style={[styles.helpCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -212,7 +240,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </View>
       <Footer />
     </ScreenContainer>
   );
@@ -307,20 +335,5 @@ export const styles = StyleSheet.create({
   helpText: {
     fontSize: 14,
     lineHeight: 20,
-  },
-  refreshButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 8,
-    marginTop: 8,
-  },
-  refreshButtonText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });

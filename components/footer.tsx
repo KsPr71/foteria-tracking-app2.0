@@ -33,6 +33,25 @@ export function Footer() {
   const formatted = (() => {
     if (!fechaFin) return null;
     try {
+      // Parsear la fecha como UTC para evitar problemas de zona horaria
+      // Si la fecha viene en formato YYYY-MM-DD, parsearla correctamente
+      const fechaParts = String(fechaFin).split("-");
+      if (fechaParts.length === 3) {
+        const year = parseInt(fechaParts[0], 10);
+        const month = parseInt(fechaParts[1], 10) - 1; // Los meses en JS son 0-indexed
+        const day = parseInt(fechaParts[2], 10);
+        const d = new Date(Date.UTC(year, month, day));
+        if (!isNaN(d.getTime())) {
+          // Formatear usando UTC para mantener la fecha correcta
+          return d.toLocaleDateString("es-ES", { 
+            day: "numeric", 
+            month: "long", 
+            year: "numeric",
+            timeZone: "UTC"
+          });
+        }
+      }
+      // Fallback: intentar parsear normalmente
       const d = new Date(fechaFin);
       if (!isNaN(d.getTime()))
         return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });

@@ -10,10 +10,9 @@ import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import type { Order } from "@/types/order";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   ScrollView,
@@ -21,7 +20,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function HomeScreen() {
@@ -35,15 +34,6 @@ export default function HomeScreen() {
   const orderService = OrderService.getInstance();
   const trackedOrdersService = TrackedOrdersService.getInstance();
 
-  // Guardar automáticamente cuando se encuentra una orden
-  useEffect(() => {
-    if (foundOrder) {
-      // Guardar la orden automáticamente para rastreo
-      trackedOrdersService.addTrackedOrder(foundOrder).catch((error) => {
-        console.error("Error auto-saving order:", error);
-      });
-    }
-  }, [foundOrder, trackedOrdersService]);
 
   const handleSearch = async () => {
     if (!orderNumber.trim()) {
@@ -285,7 +275,6 @@ export default function HomeScreen() {
 
 export const styles = StyleSheet.create({
   searchContainer: {
-    flex: 1,
     gap: 24,
   },
   header: {

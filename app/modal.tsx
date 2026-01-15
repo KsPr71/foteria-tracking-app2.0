@@ -2,12 +2,17 @@ import { ScreenContainer } from "@/components/screen-container";
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { FontAwesome } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
+import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const APP_VERSION = "1.2.0";
-const APP_NAME = "La Fotería Tracking";
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+const APP_NAME = Constants.expoConfig?.name ?? "La Fotería Tracking";
+const PHONE_NUMBER = "+5353710376";
+const EMAIL = "foteriaestudio@gmail.com";
 
 export default function AboutModal() {
   const colors = useColors();
@@ -62,25 +67,45 @@ export default function AboutModal() {
             <View style={styles.infoContent}>
               <ThemedText type="defaultSemiBold">Descripción</ThemedText>
               <ThemedText>
-                Aplicación para el seguimiento de pedidos fotográficos. Consulta el estado de tu orden en tiempo real.
+                Aplicación para el seguimiento de pedidos fotográficos del estudio La Fotería. Consulta el estado de tu orden en tiempo real.
               </ThemedText>
             </View>
           </View>
         </View>
 
         {/* Contact Info Card */}
+      <ScrollView>
+
+      
         <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Contacto</ThemedText>
           
-          <View style={styles.contactRow}>
-            <IconSymbol name="envelope.fill" size={20} color={colors.muted} />
-            <ThemedText style={styles.contactText}>foteriaestudio@gmail.com</ThemedText>
-          </View>
+          <TouchableOpacity 
+            style={styles.contactRow}
+            onPress={() => Linking.openURL(`mailto:${EMAIL}`)}
+            activeOpacity={0.7}
+          >
+            <IconSymbol name="envelope.fill" size={20} color={colors.primary} />
+            <ThemedText style={[styles.contactText, { color: colors.primary }]}>{EMAIL}</ThemedText>
+          </TouchableOpacity>
 
-          <View style={styles.contactRow}>
-            <IconSymbol name="phone.fill" size={20} color={colors.muted} />
-            <ThemedText style={styles.contactText}>+53 5371 0376</ThemedText>
-          </View>
+          <TouchableOpacity 
+            style={styles.contactRow}
+            onPress={() => Linking.openURL(`tel:${PHONE_NUMBER}`)}
+            activeOpacity={0.7}
+          >
+            <IconSymbol name="phone.fill" size={20} color={colors.primary} />
+            <ThemedText style={[styles.contactText, { color: colors.primary }]}>+53 5371 0376</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.contactRow}
+            onPress={() => Linking.openURL(`https://wa.me/${PHONE_NUMBER.replace(/\+/g, "")}`)}
+            activeOpacity={0.7}
+          >
+            <FontAwesome name="whatsapp" size={20} color="#25D366" />
+            <ThemedText style={[styles.contactText, { color: "#25D366" }]}>WhatsApp</ThemedText>
+          </TouchableOpacity>
 
           <View style={styles.contactRow}>
             <IconSymbol name="mappin.circle.fill" size={20} color={colors.muted} />
@@ -89,10 +114,12 @@ export default function AboutModal() {
             </ThemedText>
           </View>
         </View>
+        
+        </ScrollView>
 
         {/* Copyright Card */}
         <View style={[styles.copyrightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <ThemedText style={[styles.copyrightText, { color: colors.muted }]}>
+          <ThemedText style={[styles.copyrightText, { color: colors.muted }]}>        
             © {currentYear} La Fotería. Todos los derechos reservados.
           </ThemedText>
         </View>

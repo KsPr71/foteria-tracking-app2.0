@@ -1,12 +1,12 @@
-import { TrackedOrdersService } from "@/lib/tracked-orders-service";
-import type { TrackedOrder } from "@/lib/tracked-orders-service";
-import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useColors } from "@/hooks/use-colors";
+import type { TrackedOrder } from "@/lib/tracked-orders-service";
+import { TrackedOrdersService } from "@/lib/tracked-orders-service";
+import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert } from "react-native";
-import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
 
 interface TrackedOrdersListProps {
   onOrderPress: (orderNumber: string) => void;
@@ -178,7 +178,6 @@ const styles = StyleSheet.create({
   container: {
     gap: 12,
     marginTop: 8,
-    flex: 1,
   },
   titleContainer: {
     flexDirection: "row",
@@ -193,12 +192,11 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   scrollContainer: {
-    flex: 1,
-    maxHeight: 500,
+    maxHeight: 400,
   },
   ordersList: {
     gap: 12,
-    paddingBottom: 8,
+    paddingBottom: 80,
   },
   orderCard: {
     flexDirection: "row",

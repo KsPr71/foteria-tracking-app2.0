@@ -2,12 +2,13 @@ import { ScreenContainer } from "@/components/screen-container";
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext } from "@/lib/theme-provider";
 import { FontAwesome } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 const APP_NAME = Constants.expoConfig?.name ?? "La Fotería Tracking";
@@ -16,13 +17,22 @@ const EMAIL = "foteriaestudio@gmail.com";
 
 export default function AboutModal() {
   const colors = useColors();
+  const { colorScheme, setColorScheme } = useThemeContext();
   const currentYear = new Date().getFullYear();
+  const isDarkMode = colorScheme === "dark";
 
   const handleClose = () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     router.back();
+  };
+
+  const handleToggleTheme = (value: boolean) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setColorScheme(value ? "dark" : "light");
   };
 
   return (
@@ -71,12 +81,29 @@ export default function AboutModal() {
               </ThemedText>
             </View>
           </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          <View style={styles.infoRow}>
+            <IconSymbol name={isDarkMode ? "moon.fill" : "sun.max.fill"} size={24} color={colors.primary} />
+              <View style={styles.infoContent}>
+              <ThemedText type="defaultSemiBold">Tema</ThemedText>
+              <View style={styles.themeRow}>
+                <ThemedText style={{ flexShrink: 1 }}>{isDarkMode ? "Modo oscuro" : "Modo claro"}</ThemedText>
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={handleToggleTheme}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={Platform.OS === "ios" ? "#ffffff" : colors.surface}
+                  ios_backgroundColor={colors.border}
+                  style={{ marginLeft: 12 }}
+                />
+              </View>
+            </View>
+          </View>
         </View>
 
         {/* Contact Info Card */}
-      <ScrollView>
-
-      
         <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Contacto</ThemedText>
           
@@ -114,8 +141,6 @@ export default function AboutModal() {
             </ThemedText>
           </View>
         </View>
-        
-        </ScrollView>
 
         {/* Copyright Card */}
         <View style={[styles.copyrightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -173,6 +198,13 @@ const styles = StyleSheet.create({
   infoContent: {
     flex: 1,
     gap: 4,
+  },
+  themeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+    width: "100%",
   },
   divider: {
     height: 1,

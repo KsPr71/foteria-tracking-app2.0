@@ -4,6 +4,7 @@ import { TrackedOrdersList } from "@/components/tracked-orders-list";
 import { TrackingTimeline } from "@/components/tracking-timeline";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext } from "@/lib/theme-provider";
 import { formatOrderNumber, isOrderNumberComplete } from "@/lib/order-mask";
 import { OrderService } from "@/lib/order-service";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
@@ -17,6 +18,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -25,11 +27,13 @@ import {
 
 export default function HomeScreen() {
   const colors = useColors();
+  const { colorScheme, setColorScheme } = useThemeContext();
   const [orderNumber, setOrderNumber] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [foundOrder, setFoundOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const isDarkMode = colorScheme === "dark";
 
   const orderService = OrderService.getInstance();
   const trackedOrdersService = TrackedOrdersService.getInstance();
@@ -95,6 +99,13 @@ export default function HomeScreen() {
     router.push("/admin");
   };
 
+  const handleToggleTheme = (value: boolean) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setColorScheme(value ? "dark" : "light");
+  };
+
   const handleTrackedOrderPress = useCallback(async (orderNumber: string) => {
     setIsSearching(true);
     setError(null);
@@ -155,13 +166,29 @@ export default function HomeScreen() {
               <Text style={[styles.logo, { color: colors.primary }]}>La Fotería</Text>
               <Text style={[styles.subtitle, { color: colors.muted }]}>Tracking de Pedidos</Text>
             </View>
-            <TouchableOpacity
-              style={[styles.adminButton, { backgroundColor: colors.surface }]}
-              onPress={handleAdminAccess}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="gearshape.fill" size={24} color={colors.muted} />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <View style={styles.themeSwitchContainer}>
+                <IconSymbol 
+                  name={isDarkMode ? "moon.fill" : "sun.max.fill"} 
+                  size={18} 
+                  color={colors.muted} 
+                />
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={handleToggleTheme}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={Platform.OS === "ios" ? "#ffffff" : colors.surface}
+                  ios_backgroundColor={colors.border}
+                />
+              </View>
+              <TouchableOpacity
+                style={[styles.adminButton, { backgroundColor: colors.surface }]}
+                onPress={handleAdminAccess}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="gearshape.fill" size={24} color={colors.muted} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Formulario de búsqueda */}
@@ -285,6 +312,17 @@ export const styles = StyleSheet.create({
   },
   headerContent: {
     flex: 1,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  themeSwitchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 8,
   },
   logo: {
     fontSize: 32,

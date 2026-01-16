@@ -174,7 +174,7 @@ export default function Contratos() {
                         key={productIndex}
                         style={[
                           styles.productCard,
-                          { backgroundColor: colors.surface, borderColor: colors.border },
+                          { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
                         ]}
                       >
                         <View style={styles.productHeader}>
@@ -190,6 +190,32 @@ export default function Contratos() {
                           <ThemedText style={[styles.productDescription, { color: colors.muted }]}>
                             {product.descripcion}
                           </ThemedText>
+                        )}
+
+                        {/* Lista de productos incluidos */}
+                        {product.productos && 
+                         Array.isArray(product.productos) && 
+                         product.productos.length > 0 && (
+                          <View style={[styles.productItemsContainer, { borderTopColor: colors.border }]}>
+                            <View style={styles.productItemsHeader}>
+                              <IconSymbol name="shippingbox.fill" size={18} color={colors.primary} />
+                              <ThemedText type="defaultSemiBold" style={[styles.productItemsTitle, { color: colors.foreground }]}>
+                                Incluye:
+                              </ThemedText>
+                            </View>
+                            <View style={styles.productItemsList}>
+                              {product.productos.map((item, itemIndex) => (
+                                <View
+                                  key={itemIndex}
+                                  style={[styles.productItemBadge, { backgroundColor: colors.primary }]}
+                                >
+                                  <Text style={styles.productItemBadgeText}>
+                                    {item.nombre} {item.cantidad > 1 ? `(x${item.cantidad})` : ''}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
+                          </View>
                         )}
                       </View>
                     ))}
@@ -245,6 +271,37 @@ const styles = StyleSheet.create({
   productDescription: {
     fontSize: 14,
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  productItemsContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    gap: 10,
+  },
+  productItemsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  productItemsTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  productItemsList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  productItemBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  productItemBadgeText: {
+    fontSize: 12,
+    color: "#ffffff",
+    fontWeight: "500",
   },
   loadingContainer: {
     flex: 1,

@@ -19,8 +19,6 @@ export function Footer() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-      <Text style={[styles.text, { color: colors.muted }]}>© {currentYear} La Fotería. Todos los derechos reservados.</Text>
-      
       {/* Iconos de redes sociales */}
       <View style={styles.socialIcons}>
         <TouchableOpacity
@@ -52,6 +50,8 @@ export function Footer() {
           <FontAwesome name="globe" size={16} color={colors.muted} />
         </TouchableOpacity>
       </View>
+      <Text style={[styles.text, { color: colors.muted }]}>© {currentYear} La Fotería. Todos los derechos reservados.</Text>
+      
     </View>
   );
 }
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   text: {
+    marginTop: 10,
     fontSize: 12,
     textAlign: "center",
   },

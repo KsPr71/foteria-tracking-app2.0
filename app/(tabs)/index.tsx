@@ -1,43 +1,120 @@
 import { Footer } from "@/components/footer";
+import { PageHeader } from "@/components/page-header";
 import { ScreenContainer } from "@/components/screen-container";
 import { TrackedOrdersList } from "@/components/tracked-orders-list";
 import { TrackingTimeline } from "@/components/tracking-timeline";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { useThemeContext } from "@/lib/theme-provider";
 import { formatOrderNumber, isOrderNumberComplete } from "@/lib/order-mask";
 import { OrderService } from "@/lib/order-service";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import type { Order } from "@/types/order";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from "react-native";
 
+const SUPABASE_ORDERS_URL =
+  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json";
+const SUPABASE_PRICES_URL =
+  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/precios.json";
+
 export default function HomeScreen() {
   const colors = useColors();
-  const { colorScheme, setColorScheme } = useThemeContext();
   const [orderNumber, setOrderNumber] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [foundOrder, setFoundOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const isDarkMode = colorScheme === "dark";
+  const [fechaFin, setFechaFin] = useState<string | null>(null);
 
   const orderService = OrderService.getInstance();
   const trackedOrdersService = TrackedOrdersService.getInstance();
 
+  // Obtener fecha de actualización
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // Obtener fecha de órdenes
+        const ordersRes = await fetch(SUPABASE_ORDERS_URL);
+        let ordersDate: string | null = null;
+        if (ordersRes.ok) {
+          const ordersJson = await ordersRes.json();
+          ordersDate = ordersJson?.metadata?.filtros_aplicados?.fecha_fin ?? null;
+        }
+
+        // Obtener fecha de precios
+        const pricesRes = await fetch(SUPABASE_PRICES_URL);
+        let pricesDate: string | null = null;
+        if (pricesRes.ok) {
+          const pricesJson = await pricesRes.json();
+          const fechaGen = pricesJson?.metadata?.fecha_generacion;
+          if (fechaGen) {
+            pricesDate = fechaGen.split("T")[0];
+          }
+        }
+
+        // Usar la fecha más reciente
+        let fechaActualizada: string | null = ordersDate;
+        if (ordersDate && pricesDate) {
+          const ordersDateObj = new Date(ordersDate);
+          const pricesDateObj = new Date(pricesDate);
+          fechaActualizada = ordersDateObj >= pricesDateObj ? ordersDate : pricesDate;
+        } else if (pricesDate) {
+          fechaActualizada = pricesDate;
+        }
+
+        if (mounted && fechaActualizada) {
+          setFechaFin(fechaActualizada);
+        }
+      } catch (e) {
+        // ignore fetch errors
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Formatear fecha para el subtítulo
+  const formattedDate = (() => {
+    if (!fechaFin) return "Busca y registra tus ordenes";
+    try {
+      const fechaParts = String(fechaFin).split("-");
+      if (fechaParts.length === 3) {
+        const year = parseInt(fechaParts[0], 10);
+        const month = parseInt(fechaParts[1], 10) - 1;
+        const day = parseInt(fechaParts[2], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) {
+          const formatted = d.toLocaleDateString("es-ES", { 
+            day: "numeric", 
+            month: "long", 
+            year: "numeric",
+          });
+          return `Actualizado: ${formatted}`;
+        }
+      }
+      const d = new Date(fechaFin);
+      if (!isNaN(d.getTime())) {
+        const formatted = d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+        return `Actualizado: ${formatted}`;
+      }
+    } catch (e) {
+      // fallback
+    }
+    return "Busca y registra tus ordenes";
+  })();
 
   const handleSearch = async () => {
     if (!orderNumber.trim()) {
@@ -95,16 +172,6 @@ export default function HomeScreen() {
     setError(null);
   };
 
-  const handleAdminAccess = () => {
-    router.push("/admin");
-  };
-
-  const handleToggleTheme = (value: boolean) => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setColorScheme(value ? "dark" : "light");
-  };
 
   const handleTrackedOrderPress = useCallback(async (orderNumber: string) => {
     setIsSearching(true);
@@ -160,36 +227,11 @@ export default function HomeScreen() {
     <ScreenContainer className="p-6">
       <View style={{ flex: 1 }}>
         <View style={styles.searchContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Text style={[styles.logo, { color: colors.primary }]}>La Fotería</Text>
-              <Text style={[styles.subtitle, { color: colors.muted }]}>Tracking de Pedidos</Text>
-            </View>
-            <View style={styles.headerActions}>
-              <View style={styles.themeSwitchContainer}>
-                <IconSymbol 
-                  name={isDarkMode ? "moon.fill" : "sun.max.fill"} 
-                  size={18} 
-                  color={colors.muted} 
-                />
-                <Switch
-                  value={isDarkMode}
-                  onValueChange={handleToggleTheme}
-                  trackColor={{ false: colors.border, true: colors.primary }}
-                  thumbColor={Platform.OS === "ios" ? "#ffffff" : colors.surface}
-                  ios_backgroundColor={colors.border}
-                />
-              </View>
-              <TouchableOpacity
-                style={[styles.adminButton, { backgroundColor: colors.surface }]}
-                onPress={handleAdminAccess}
-                activeOpacity={0.7}
-              >
-                <IconSymbol name="gearshape.fill" size={24} color={colors.muted} />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PageHeader 
+            icon="magnifyingglass"
+            title="Tracking de Pedidos"
+            subtitle={formattedDate}
+          />
 
           {/* Formulario de búsqueda */}
           <View style={styles.searchForm}>
@@ -303,41 +345,6 @@ export default function HomeScreen() {
 export const styles = StyleSheet.create({
   searchContainer: {
     gap: 24,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginTop: 8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  themeSwitchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 8,
-  },
-  logo: {
-    fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-  },
-  adminButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
   },
   searchForm: {
     gap: 12,

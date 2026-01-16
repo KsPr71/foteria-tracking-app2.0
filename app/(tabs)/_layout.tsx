@@ -43,6 +43,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="contratos"
+        options={{
+          title: "Ofertas",
+          // cspell:ignore dollarsign
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="FAQ"
         options={{
           title: "FAQ",

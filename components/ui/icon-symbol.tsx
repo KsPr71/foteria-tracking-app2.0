@@ -50,6 +50,17 @@ const MAPPING = {
   "mappin.circle.fill": "place",
   // arrows
   "arrow.clockwise": "refresh",
+  // money/currency icons
+  "dollarsign.circle.fill": "attach-money",
+  "dollarsign.circle": "attach-money",
+  "dollarsign": "attach-money",
+  // document icons
+  "square.and.pencil": "edit-document",
+  // moon and sun for theme
+  "moon.fill": "dark-mode",
+  "sun.max.fill": "light-mode",
+  // exclamation
+  "exclamationmark.triangle.fill": "warning",
 } as IconMapping;
 
 /**

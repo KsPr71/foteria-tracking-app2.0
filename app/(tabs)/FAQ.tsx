@@ -1,9 +1,10 @@
+import { PageHeader } from "@/components/page-header";
 import { ScreenContainer } from "@/components/screen-container";
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface FAQItem {
   id: number;
@@ -76,16 +77,11 @@ export default function FAQ() {
   return (
     <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
-        <View style={styles.headerRow}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.primary }]}>
-            <IconSymbol name="questionmark.circle" size={42} color="#fff" />
-          </View>
-          <View style={styles.headerText}>
-            <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
-            <ThemedText type="title">FAQ</ThemedText>
-            <ThemedText type="subtitle">Preguntas frecuentes</ThemedText>
-          </View>
-        </View>
+        <PageHeader 
+          icon="questionmark.circle"
+          title="FAQ"
+          subtitle="Preguntas frecuentes"
+        />
 
         <View>
           {FAQ_ITEMS.map((item) => {
@@ -144,27 +140,6 @@ export default function FAQ() {
 }
 
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerText: {
-    justifyContent: 'center',
-  },
-  brand: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
   questionCard: {
     paddingVertical: 14,
     paddingHorizontal: 14,

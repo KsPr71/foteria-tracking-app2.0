@@ -61,6 +61,8 @@ const MAPPING = {
   "sun.max.fill": "light-mode",
   // exclamation
   "exclamationmark.triangle.fill": "warning",
+  // menu icons
+  "line.3.horizontal": "menu",
 } as IconMapping;
 
 /**

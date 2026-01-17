@@ -131,7 +131,8 @@ export async function registerBackgroundFetch(): Promise<void> {
     // Solicitar permisos de background fetch
     const { status } = await BackgroundFetch.requestPermissionsAsync();
     
-    if (status !== BackgroundFetch.PermissionStatus.Granted) {
+    // Verificar si el permiso fue otorgado (1 = granted, 2 = denied, 3 = restricted)
+    if (status !== 1) {
       console.warn("[BackgroundTask] Background fetch permission not granted. Status:", status);
       console.warn("[BackgroundTask] Note: Background fetch requires a native build and may not work in Expo Go");
       return;

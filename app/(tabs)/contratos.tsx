@@ -58,9 +58,20 @@ export default function Contratos() {
     return priceGroups.filter((group) => group.categoria === selectedCategory);
   }, [priceGroups, selectedCategory]);
 
-  // Obtener todas las categorías únicas
+  // Obtener todas las categorías únicas, con "Ofertas" primero (después de "Todas")
   const categories = useMemo(() => {
-    return priceGroups.map((group) => group.categoria);
+    const allCategories = priceGroups.map((group) => group.categoria);
+    const ofertasIndex = allCategories.indexOf("Ofertas");
+    
+    if (ofertasIndex > -1) {
+      // Separar "Ofertas" del resto
+      const ofertas = allCategories[ofertasIndex];
+      const otherCategories = allCategories.filter((cat, index) => index !== ofertasIndex);
+      // Poner "Ofertas" al principio (después de "Todas")
+      return [ofertas, ...otherCategories];
+    }
+    
+    return allCategories;
   }, [priceGroups]);
 
   return (

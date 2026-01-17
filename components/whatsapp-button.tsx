@@ -10,10 +10,10 @@ export function WhatsAppButton() {
   const encoded = useMemo(() => encodeURIComponent(MESSAGE), []);
   const insets = useSafeAreaInsets();
   
-  // Calcular posición: tab bar (56px) + padding (12 web, insets.bottom mobile) + footer height aproximado (90px) + espacio (16px)
+  // Calcular posición: tab bar (56px) + padding (12 web, insets.bottom mobile) + footer height aproximado (90px) + espacio (32px para más espacio)
   const tabBarHeight = 56 + (Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8));
-  const footerHeight = 90; // Aproximado: padding + contenido
-  const spacing = 16;
+  const footerHeight = 40; // Aproximado: padding + contenido
+  const spacing = 10; // Aumentado de 16 a 32 para bajar más el botón
   const bottomPosition = tabBarHeight + footerHeight + spacing;
 
   const openChat = async () => {

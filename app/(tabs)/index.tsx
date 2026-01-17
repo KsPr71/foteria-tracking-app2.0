@@ -1,4 +1,3 @@
-import { Footer } from "@/components/footer";
 import { PageHeader } from "@/components/page-header";
 import { ScreenContainer } from "@/components/screen-container";
 import { TrackedOrdersList } from "@/components/tracked-orders-list";
@@ -217,7 +216,6 @@ export default function HomeScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <TrackingTimeline order={foundOrder} onNewSearch={handleNewSearch} />
         </ScrollView>
-        <Footer />
       </ScreenContainer>
     );
   }
@@ -337,7 +335,7 @@ export default function HomeScreen() {
           <TrackedOrdersList onOrderPress={handleTrackedOrderPress} />
         </View>
       </View>
-      <Footer />
+      
     </ScreenContainer>
   );
 }

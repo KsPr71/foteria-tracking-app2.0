@@ -21,6 +21,8 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-run
 import { createTRPCClient, trpc } from "@/lib/trpc";
 import { NotificationsProvider, useNotifications } from "@/contexts/notifications-context";
 import { Snackbar } from "@/components/snackbar";
+import { DrawerProvider, useDrawerContext } from "@/contexts/drawer-context";
+import { DrawerMenu } from "@/components/drawer-menu";
 // Importar el archivo de background tasks para que la tarea se defina antes de registrarse
 import "@/lib/background-tasks";
 import { registerBackgroundFetch } from "@/lib/background-tasks";
@@ -93,6 +95,7 @@ export default function RootLayout() {
 
   const AppContent = () => {
     const { snackbarMessage, snackbarVisible, setSnackbarVisible } = useNotifications();
+    const { isOpen, closeDrawer } = useDrawerContext();
 
     // Log para debug
     useEffect(() => {
@@ -122,6 +125,7 @@ export default function RootLayout() {
               </Stack>
                 <StatusBar style="auto" />
                 <WhatsAppButton />
+                <DrawerMenu visible={isOpen} onClose={closeDrawer} />
             </QueryClientProvider>
           </trpc.Provider>
         </GestureHandlerRootView>
@@ -141,9 +145,11 @@ export default function RootLayout() {
   };
 
   const content = (
-    <NotificationsProvider>
-      <AppContent />
-    </NotificationsProvider>
+    <DrawerProvider>
+      <NotificationsProvider>
+        <AppContent />
+      </NotificationsProvider>
+    </DrawerProvider>
   );
 
   const shouldOverrideSafeArea = Platform.OS === "web";

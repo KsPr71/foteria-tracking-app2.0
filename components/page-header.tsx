@@ -1,9 +1,9 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { useThemeContext } from "@/lib/theme-provider";
+import { useDrawerContext } from "@/contexts/drawer-context";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface PageHeaderProps {
   icon?: string;
@@ -14,54 +14,34 @@ interface PageHeaderProps {
 
 export function PageHeader({ icon, iconSize = 42, title, subtitle }: PageHeaderProps) {
   const colors = useColors();
-  const { colorScheme, setColorScheme } = useThemeContext();
-  const isDarkMode = colorScheme === "dark";
+  const { openDrawer } = useDrawerContext();
+
+  const handleMenuPress = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    openDrawer();
+  };
 
   const handleAdminAccess = () => {
     router.push("/admin");
-  };
-
-  const handleAboutPress = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    router.push("/modal");
-  };
-
-  const handleToggleTheme = (value: boolean) => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setColorScheme(value ? "dark" : "light");
   };
 
   return (
     <View style={styles.container}>
       {/* Header compartido: La Fotería + Switch + Botón */}
       <View style={styles.sharedHeader}>
-        <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
-        <View style={styles.headerActions}>
-          <View style={styles.themeSwitchContainer}>
-            <IconSymbol 
-              name={isDarkMode ? "moon.fill" : "sun.max.fill"} 
-              size={18} 
-              color={colors.muted} 
-            />
-            <Switch
-              value={isDarkMode}
-              onValueChange={handleToggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={Platform.OS === "ios" ? "#ffffff" : colors.surface}
-              ios_backgroundColor={colors.border}
-            />
-          </View>
+        <View style={styles.leftSection}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
-            onPress={handleAboutPress}
+            style={[styles.menuButton, { backgroundColor: colors.surface }]}
+            onPress={handleMenuPress}
             activeOpacity={0.7}
           >
-            <IconSymbol name="info.circle.fill" size={24} color={colors.muted} />
+            <IconSymbol name="line.3.horizontal" size={24} color={colors.muted} />
           </TouchableOpacity>
+          <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
+        </View>
+        <View style={styles.headerActions}>
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: colors.surface }]}
             onPress={handleAdminAccess}
@@ -99,6 +79,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 8,
   },
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  menuButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   brand: {
     fontSize: 28,
     fontWeight: "700",
@@ -106,13 +98,6 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-  },
-  themeSwitchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 8,
   },
   actionButton: {
     width: 48,

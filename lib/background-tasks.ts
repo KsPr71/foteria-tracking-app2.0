@@ -138,15 +138,18 @@ export async function registerBackgroundFetch(): Promise<void> {
       return;
     }
 
+    // Obtener intervalo configurado
+    const updateInterval = await TrackedOrdersService.getInstance().getUpdateInterval();
+    console.log(`[BackgroundTask] Registering task with interval: ${updateInterval} minutes`);
+
     // Registrar la tarea
     await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-      minimumInterval: 15 * 60, // 15 minutos en segundos (mínimo permitido)
+      minimumInterval: updateInterval * 60, // Convertir a segundos
       stopOnTerminate: false, // Continuar incluso si la app se cierra
       startOnBoot: true, // Iniciar cuando el dispositivo se reinicia
     });
 
     console.log("[BackgroundTask] Background fetch task registered successfully");
-    console.log("[BackgroundTask] Task will run every ~15 minutes to fetch orders from server");
   } catch (error) {
     console.error("[BackgroundTask] Error registering background fetch:", error);
     // No lanzar el error para no romper la app si falla
@@ -154,6 +157,14 @@ export async function registerBackgroundFetch(): Promise<void> {
       console.error("[BackgroundTask] Error details:", error.message);
     }
   }
+}
+
+/**
+ * Actualiza el intervalo de la tarea de background fetch
+ */
+export async function updateBackgroundFetchInterval(): Promise<void> {
+  await unregisterBackgroundFetch();
+  await registerBackgroundFetch();
 }
 
 /**

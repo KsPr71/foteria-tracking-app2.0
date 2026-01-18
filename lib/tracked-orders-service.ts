@@ -1,8 +1,9 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Order, OrderStatus } from "@/types/order";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TRACKED_ORDERS_KEY = "tracked_orders";
 const TRACKED_ORDERS_STATES_KEY = "tracked_orders_states";
+const UPDATE_INTERVAL_KEY = "update_interval";
 
 export interface TrackedOrder {
   orderNumber: string;
@@ -19,7 +20,7 @@ export interface TrackedOrder {
 export class TrackedOrdersService {
   private static instance: TrackedOrdersService;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): TrackedOrdersService {
     if (!TrackedOrdersService.instance) {
@@ -182,6 +183,31 @@ export class TrackedOrdersService {
       await AsyncStorage.removeItem(TRACKED_ORDERS_STATES_KEY);
     } catch (error) {
       console.error("Error clearing all tracked orders:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el intervalo de actualización en minutos
+   */
+  async getUpdateInterval(): Promise<number> {
+    try {
+      const value = await AsyncStorage.getItem(UPDATE_INTERVAL_KEY);
+      return value ? parseInt(value, 10) : 15; // Default 15 min
+    } catch (error) {
+      console.error("Error getting update interval:", error);
+      return 15;
+    }
+  }
+
+  /**
+   * Establece el intervalo de actualización en minutos
+   */
+  async setUpdateInterval(minutes: number): Promise<void> {
+    try {
+      await AsyncStorage.setItem(UPDATE_INTERVAL_KEY, minutes.toString());
+    } catch (error) {
+      console.error("Error setting update interval:", error);
       throw error;
     }
   }

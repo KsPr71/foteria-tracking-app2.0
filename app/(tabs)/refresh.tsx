@@ -86,8 +86,9 @@ export default function RefreshScreen() {
         if (currentOrder) {
           // Verificar si el estado cambió
           if (currentOrder.estado !== tracked.lastKnownStatus) {
-            // Actualizar estado en el servicio
-            await trackedOrdersService.updateOrderStatus(tracked.orderNumber, currentOrder.estado);
+            // No actualizar el estado aquí, dejar que checkForChanges lo haga y envíe la notificación
+            // await trackedOrdersService.updateOrderStatus(tracked.orderNumber, currentOrder.estado);
+            console.log(`[Refresh] Change detected for ${tracked.orderNumber}: ${tracked.lastKnownStatus} -> ${currentOrder.estado}`);
           }
         }
         processedOrders++;

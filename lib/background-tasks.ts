@@ -1,12 +1,12 @@
+import type { Order } from "@/types/order";
+import { STAGES } from "@/types/order";
 import * as BackgroundFetch from "expo-background-fetch";
-import * as TaskManager from "expo-task-manager";
-import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import { Platform } from "react-native";
 import { OrderService } from "./order-service";
 import { TrackedOrdersService } from "./tracked-orders-service";
-import type { Order, OrderStatus } from "@/types/order";
-import { STAGES } from "@/types/order";
 
 const BACKGROUND_FETCH_TASK = "background-order-check";
 
@@ -19,32 +19,32 @@ const isExpoGo = Constants.executionEnvironment === "storeClient";
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   try {
     console.log("[BackgroundTask] Starting background order check...");
-    
+
     const orderService = OrderService.getInstance();
     const trackedOrdersService = TrackedOrdersService.getInstance();
-    
+
     // Limpiar caché para asegurar que se carguen datos frescos del servidor
     console.log("[BackgroundTask] Clearing cache to force fresh data from server...");
     await orderService.clearCache();
-    
+
     // Cargar todas las órdenes del servidor (forzar refresh para obtener datos frescos)
     console.log("[BackgroundTask] Fetching orders from server...");
     const allOrders = await orderService.fetchOrders(true);
     console.log(`[BackgroundTask] Loaded ${allOrders.length} orders from server`);
-    
+
     // Obtener órdenes rastreadas después de cargar del servidor
     const trackedOrders = await trackedOrdersService.getTrackedOrders();
-    
+
     if (trackedOrders.length === 0) {
       console.log("[BackgroundTask] No tracked orders, but data refreshed from server");
       return BackgroundFetch.BackgroundFetchResult.NoData;
     }
-    
+
     const ordersMap = new Map<string, Order>();
     allOrders.forEach((order) => {
       ordersMap.set(order.orden, order);
     });
-    
+
     // Verificar cada orden rastreada
     let changesDetected = 0;
     for (const tracked of trackedOrders) {
@@ -52,13 +52,13 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
       if (!currentOrder) {
         continue;
       }
-      
+
       // Si el estado cambió, enviar notificación
       if (currentOrder.estado !== tracked.lastKnownStatus) {
         changesDetected++;
         const stage = STAGES.find((s) => s.id === currentOrder.estado);
         const message = `La orden ${tracked.orderNumber} del cliente ${tracked.cliente} ha cambiado a ${stage?.title || "nuevo estado"}`;
-        
+
         // Enviar notificación push
         if (Platform.OS !== "web" && !isExpoGo) {
           try {
@@ -79,12 +79,12 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
             console.warn("[BackgroundTask] Error sending notification:", error);
           }
         }
-        
+
         // Actualizar el estado conocido
         await trackedOrdersService.updateOrderStatus(tracked.orderNumber, currentOrder.estado);
       }
     }
-    
+
     // Actualizar badge
     if (Platform.OS !== "web" && !isExpoGo) {
       try {
@@ -94,9 +94,9 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         console.warn("[BackgroundTask] Error updating badge:", error);
       }
     }
-    
+
     console.log(`[BackgroundTask] Check complete. Changes detected: ${changesDetected}`);
-    
+
     return changesDetected > 0
       ? BackgroundFetch.BackgroundFetchResult.NewData
       : BackgroundFetch.BackgroundFetchResult.NoData;
@@ -115,38 +115,38 @@ export async function registerBackgroundFetch(): Promise<void> {
     console.log("[BackgroundTask] Skipping registration (web or Expo Go)");
     return;
   }
-  
+
   try {
     // Esperar un poco para asegurar que la tarea esté definida
     await new Promise((resolve) => setTimeout(resolve, 100));
-    
+
     // Verificar si la tarea ya está registrada
     const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
-    
+
     if (isRegistered) {
       console.log("[BackgroundTask] Task already registered");
       return;
     }
-    
-    // Solicitar permisos de background fetch
-    const { status } = await BackgroundFetch.requestPermissionsAsync();
-    
-    // Verificar si el permiso fue otorgado (1 = granted, 2 = denied, 3 = restricted)
-    if (status !== 1) {
-      console.warn("[BackgroundTask] Background fetch permission not granted. Status:", status);
+
+    // Verificar el estado de background fetch
+    const status = await BackgroundFetch.getStatusAsync();
+
+    // Verificar si está disponible
+    if (status !== BackgroundFetch.BackgroundFetchStatus.Available) {
+      console.warn("[BackgroundTask] Background fetch is not available. Status:", status);
       console.warn("[BackgroundTask] Note: Background fetch requires a native build and may not work in Expo Go");
       return;
     }
-    
+
     // Registrar la tarea
     await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-      minimumInterval: 24 * 60 * 60, // 24 horas en segundos (86400 segundos)
+      minimumInterval: 15 * 60, // 15 minutos en segundos (mínimo permitido)
       stopOnTerminate: false, // Continuar incluso si la app se cierra
       startOnBoot: true, // Iniciar cuando el dispositivo se reinicia
     });
-    
+
     console.log("[BackgroundTask] Background fetch task registered successfully");
-    console.log("[BackgroundTask] Task will run every 24 hours to fetch orders from server");
+    console.log("[BackgroundTask] Task will run every ~15 minutes to fetch orders from server");
   } catch (error) {
     console.error("[BackgroundTask] Error registering background fetch:", error);
     // No lanzar el error para no romper la app si falla
@@ -163,10 +163,10 @@ export async function unregisterBackgroundFetch(): Promise<void> {
   if (Platform.OS === "web" || isExpoGo) {
     return;
   }
-  
+
   try {
     const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
-    
+
     if (isRegistered) {
       await BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
       console.log("[BackgroundTask] Background fetch task unregistered");
@@ -183,7 +183,7 @@ export async function getBackgroundFetchStatus(): Promise<BackgroundFetch.Backgr
   if (Platform.OS === "web" || isExpoGo) {
     return null;
   }
-  
+
   try {
     return await BackgroundFetch.getStatusAsync();
   } catch (error) {

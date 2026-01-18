@@ -76,12 +76,12 @@ export default function FAQ() {
 
   return (
     <ScreenContainer className="p-4">
-      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
         <PageHeader 
-          icon="questionmark.circle"
+          icon="questionmark.circle.fill"
           title="FAQ"
           subtitle="Preguntas frecuentes"
         />
+      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
 
         <View>
           {FAQ_ITEMS.map((item) => {

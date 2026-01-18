@@ -76,13 +76,13 @@ export default function Contratos() {
 
   return (
     <ScreenContainer className="p-4">
-      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
         <PageHeader 
           icon="dollarsign.circle.fill"
           title="Lista de Precios"
           subtitle="Consulta nuestros servicios y precios"
         />
 
+      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />

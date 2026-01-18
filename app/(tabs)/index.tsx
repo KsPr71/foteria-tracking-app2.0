@@ -222,7 +222,7 @@ export default function HomeScreen() {
 
   // Pantalla de búsqueda
   return (
-    <ScreenContainer className="p-6">
+    <ScreenContainer className="p-4">
       <View style={{ flex: 1 }}>
         <View style={styles.searchContainer}>
           <PageHeader 

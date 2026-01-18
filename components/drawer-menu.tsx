@@ -98,8 +98,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         translateX.value = withSpring(0, { damping: 20, stiffness: 90 });
         backdropOpacity.value = withSpring(0.5, { damping: 20, stiffness: 90 });
       }
-    })
-    .simultaneousWithExternalGesture(false);
+    });
 
   const handleToggleTheme = (value: boolean) => {
     if (Platform.OS !== "web") {
@@ -413,7 +412,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   settingCard: {
-    padding: 16,
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1,
   },
@@ -442,7 +441,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 8,
@@ -469,7 +468,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   socialCard: {
-    padding: 16,
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1,
   },
@@ -479,15 +478,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   socialIconButton: {
-    width: 48,
-    height: 48,
+    width: 28,
+    height: 28,
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
   },
   footer: {
-    paddingVertical: 12,
-    paddingBottom: 16,
+    paddingVertical: 6,
+    paddingBottom: 30,
     alignItems: "center",
     borderTopWidth: 1,
   },

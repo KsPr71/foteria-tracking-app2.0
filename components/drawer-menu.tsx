@@ -1,11 +1,10 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { useNotifications } from "@/contexts/notifications-context";
 import { useColors } from "@/hooks/use-colors";
 import { updateBackgroundFetchInterval } from "@/lib/background-tasks";
 import { useThemeContext } from "@/lib/theme-provider";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import { FontAwesome } from "@expo/vector-icons";
-import Slider from "@react-native-community/slider";
+
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
@@ -29,44 +28,19 @@ const EMAIL = "foteriaestudio@gmail.com";
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const colors = useColors();
   const { colorScheme, setColorScheme } = useThemeContext();
-  const { checkNow } = useNotifications();
   const isDarkMode = colorScheme === "dark";
   const translateX = useSharedValue(-300);
   const [shouldRender, setShouldRender] = useState(false);
   const insets = useSafeAreaInsets();
 
-  // Intervalo de actualización
-  const [updateInterval, setUpdateInterval] = useState(15);
-  const intervalOptions = [15, 60, 180, 360, 720, 1440]; // 15m, 1h, 3h, 6h, 12h, 24h
+  // Intervalo de actualización fijo en 12 horas
+  const UPDATE_INTERVAL = 720; // 12 horas en minutos
 
   useEffect(() => {
-    TrackedOrdersService.getInstance().getUpdateInterval().then(setUpdateInterval);
+    // Establecer el intervalo al montar el componente
+    TrackedOrdersService.getInstance().setUpdateInterval(UPDATE_INTERVAL);
+    updateBackgroundFetchInterval();
   }, []);
-
-  const getIntervalLabel = (minutes: number) => {
-    if (minutes < 60) return `${minutes} min`;
-    const hours = minutes / 60;
-    return `${hours} ${hours === 1 ? "hora" : "horas"}`;
-  };
-
-  const getCurrentStepIndex = () => {
-    const index = intervalOptions.indexOf(updateInterval);
-    return index >= 0 ? index : 0;
-  };
-
-  const handleIntervalChange = (value: number) => {
-    const minutes = intervalOptions[Math.round(value)];
-    setUpdateInterval(minutes);
-  };
-
-  const handleIntervalComplete = async (value: number) => {
-    const minutes = intervalOptions[Math.round(value)];
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    await TrackedOrdersService.getInstance().setUpdateInterval(minutes);
-    await updateBackgroundFetchInterval();
-  };
 
   // Animar entrada/salida del drawer
   const animatedStyle = useAnimatedStyle(() => {
@@ -271,63 +245,19 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                     {/* Separator */}
                     <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 12 }} />
 
-                    {/* Update Interval */}
+                    {/* Update Interval - Solo lectura */}
                     <View style={styles.settingRow}>
                       <View style={styles.settingLeft}>
                         <IconSymbol name="clock.fill" size={22} color={colors.primary} />
                         <View style={styles.settingContent}>
                           <Text style={[styles.settingLabel, { color: colors.foreground }]}>Actualización</Text>
                           <Text style={[styles.settingDescription, { color: colors.muted }]}>
-                            Cada {getIntervalLabel(updateInterval)}
+                            Cada 12 horas
                           </Text>
                         </View>
                       </View>
                     </View>
-
-                    <View style={{ marginTop: 10, paddingHorizontal: 4 }}>
-                      <Slider
-                        style={{ width: '100%', height: 40 }}
-                        minimumValue={0}
-                        maximumValue={intervalOptions.length - 1}
-                        step={1}
-                        value={getCurrentStepIndex()}
-                        onValueChange={handleIntervalChange}
-                        onSlidingComplete={handleIntervalComplete}
-                        minimumTrackTintColor={colors.primary}
-                        maximumTrackTintColor={colors.border}
-                        thumbTintColor={colors.primary}
-                      />
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                        <Text style={{ fontSize: 10, color: colors.muted }}>15m</Text>
-                        <Text style={{ fontSize: 10, color: colors.muted }}>24h</Text>
-                      </View>
-                    </View>
                   </View>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.menuItem,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                        marginTop: 12,
-                      }
-                    ]}
-                    onPress={async () => {
-                      if (Platform.OS !== "web") {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      }
-                      onClose();
-                      // Pequeño delay para permitir que el drawer se cierre antes de iniciar la tarea pesada
-                      setTimeout(() => {
-                        checkNow();
-                      }, 300);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <IconSymbol name="arrow.clockwise.circle.fill" size={22} color={colors.primary} />
-                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>Verificar actualizaciones ahora</Text>
-                  </TouchableOpacity>
                 </View>
 
                 {/* Navegación */}

@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const LOG_FILE_URI = (FileSystem.documentDirectory || FileSystem.cacheDirectory) + 'debug_logs.txt';
 const MAX_LOG_SIZE = 1024 * 1024; // 1MB
@@ -48,11 +48,10 @@ export class LoggerService {
                 }
 
                 // Append to existing file
-                // Note: Expo FileSystem doesn't have a direct "append" for text files in all versions,
-                // but read+write is safe enough for low volume logs. 
-                // For better performance we could use appendAsStringAsync if available in this SDK version.
-                // Checking documentation: appendAsStringAsync is available.
-                await FileSystem.writeAsStringAsync(LOG_FILE_URI, logEntry, { encoding: FileSystem.EncodingType.UTF8, append: true });
+                // Note: Expo FileSystem legacy API doesn't have an append option,
+                // so we need to read the existing content and write it back with the new entry.
+                const existingContent = await FileSystem.readAsStringAsync(LOG_FILE_URI);
+                await FileSystem.writeAsStringAsync(LOG_FILE_URI, existingContent + logEntry, { encoding: 'utf8' });
             } else {
                 // Create new file
                 await FileSystem.writeAsStringAsync(LOG_FILE_URI, logEntry);

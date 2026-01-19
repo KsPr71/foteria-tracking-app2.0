@@ -11,8 +11,8 @@ import { AppState, Platform } from "react-native";
 const isExpoGo = Constants.executionEnvironment === "storeClient";
 
 // Configurar cómo se manejan las notificaciones cuando la app está en primer plano
-// Solo en móvil y solo si no está en Expo Go (donde las notificaciones push remotas no funcionan)
-if (Platform.OS !== "web" && !isExpoGo) {
+// Solo en móvil
+if (Platform.OS !== "web") {
   try {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -51,8 +51,8 @@ export function useOrderNotifications() {
     try {
       // Contar solo las órdenes con cambios no vistos
       const unreadCount = await trackedOrdersService.getUnreadChangesCount();
-      // Solo actualizar badge en móvil (no en web ni Expo Go)
-      if (Platform.OS !== "web" && !isExpoGo) {
+      // Solo actualizar badge en móvil (no en web)
+      if (Platform.OS !== "web") {
         try {
           await Notifications.setBadgeCountAsync(unreadCount);
         } catch (error) {
@@ -79,7 +79,7 @@ export function useOrderNotifications() {
 
     // Crear mensaje con el formato solicitado
     const message = `La orden ${tracked.orderNumber} del cliente ${tracked.cliente} ha cambiado a ${stage.title}`;
-    
+
     console.log("[Notifications] Sending status change notification");
     console.log("[Notifications] Message:", message);
     console.log("[Notifications] Setting snackbar visible to true");
@@ -87,18 +87,18 @@ export function useOrderNotifications() {
     // Siempre mostrar snackbar cuando se detecta un cambio
     setSnackbarMessage(message);
     setSnackbarVisible(true);
-    
+
     console.log("[Notifications] Snackbar state updated");
 
-    // Enviar notificación push solo en móvil (no en web ni Expo Go)
-    // En Expo Go, las notificaciones push remotas no funcionan, pero el snackbar sí
-    if (Platform.OS !== "web" && !isExpoGo) {
+    // Enviar notificación push solo en móvil (no en web)
+    // En Expo Go, las notificaciones locales funcionan
+    if (Platform.OS !== "web") {
       try {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: `Actualización de pedido: ${tracked.orderNumber}`,
             body: message,
-            data: { 
+            data: {
               orderNumber: tracked.orderNumber,
               cliente: tracked.cliente,
               message: message,
@@ -119,7 +119,7 @@ export function useOrderNotifications() {
       console.log("[Notifications] Checking for status changes...");
       const trackedOrders = await trackedOrdersService.getTrackedOrders();
       console.log(`[Notifications] Found ${trackedOrders.length} tracked orders`);
-      
+
       if (trackedOrders.length === 0) {
         await updateBadge();
         return;
@@ -142,7 +142,7 @@ export function useOrderNotifications() {
         }
 
         console.log(`[Notifications] Checking order ${tracked.orderNumber}: lastKnown=${tracked.lastKnownStatus}, current=${currentOrder.estado}`);
-        
+
         // Si el estado cambió, enviar notificación
         if (currentOrder.estado !== tracked.lastKnownStatus) {
           console.log(`[Notifications] Status change detected for ${tracked.orderNumber}: ${tracked.lastKnownStatus} -> ${currentOrder.estado}`);
@@ -153,7 +153,7 @@ export function useOrderNotifications() {
       }
 
       console.log(`[Notifications] Check complete. Changes detected: ${changesDetected}`);
-      
+
       // Actualizar badge siempre para reflejar el estado actual
       await updateBadge();
     } catch (error) {
@@ -248,7 +248,7 @@ export function useOrderNotifications() {
     // Configurar intervalo para verificar periódicamente
     intervalRef.current = setInterval(() => {
       checkForStatusChanges();
-    }, CHECK_INTERVAL) as unknown as NodeJS.Timeout;
+    }, CHECK_INTERVAL);
 
     return () => {
       clearTimeout(initialCheck);

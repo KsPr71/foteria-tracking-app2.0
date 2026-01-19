@@ -59,8 +59,14 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         const stage = STAGES.find((s) => s.id === currentOrder.estado);
         const message = `La orden ${tracked.orderNumber} del cliente ${tracked.cliente} ha cambiado a ${stage?.title || "nuevo estado"}`;
 
-        // Enviar notificación push
-        if (Platform.OS !== "web" && !isExpoGo) {
+        // Actualizar el estado conocido primero para que el conteo sea correcto
+        await trackedOrdersService.updateOrderStatus(tracked.orderNumber, currentOrder.estado);
+
+        // Obtener conteo actualizado
+        const newUnreadCount = await trackedOrdersService.getUnreadChangesCount();
+
+        // Enviar notificación push (local)
+        if (Platform.OS !== "web") {
           try {
             await Notifications.scheduleNotificationAsync({
               content: {
@@ -72,6 +78,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
                   message: message,
                 },
                 sound: true,
+                badge: newUnreadCount,
+                priority: Notifications.AndroidNotificationPriority.HIGH,
               },
               trigger: null, // Enviar inmediatamente
             });
@@ -79,14 +87,11 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
             console.warn("[BackgroundTask] Error sending notification:", error);
           }
         }
-
-        // Actualizar el estado conocido
-        await trackedOrdersService.updateOrderStatus(tracked.orderNumber, currentOrder.estado);
       }
     }
 
     // Actualizar badge
-    if (Platform.OS !== "web" && !isExpoGo) {
+    if (Platform.OS !== "web") {
       try {
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
         await Notifications.setBadgeCountAsync(unreadCount);
@@ -111,9 +116,14 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
  */
 export async function registerBackgroundFetch(): Promise<void> {
   // No registrar en web ni Expo Go
-  if (Platform.OS === "web" || isExpoGo) {
-    console.log("[BackgroundTask] Skipping registration (web or Expo Go)");
+  // No registrar en web
+  if (Platform.OS === "web") {
+    console.log("[BackgroundTask] Skipping registration (web)");
     return;
+  }
+
+  if (isExpoGo) {
+    console.log("[BackgroundTask] Attempting to register in Expo Go (might not work on all platforms)");
   }
 
   try {
@@ -171,7 +181,7 @@ export async function updateBackgroundFetchInterval(): Promise<void> {
  * Cancela el registro de la tarea de background fetch
  */
 export async function unregisterBackgroundFetch(): Promise<void> {
-  if (Platform.OS === "web" || isExpoGo) {
+  if (Platform.OS === "web") {
     return;
   }
 
@@ -191,7 +201,7 @@ export async function unregisterBackgroundFetch(): Promise<void> {
  * Obtiene el estado de la tarea de background fetch
  */
 export async function getBackgroundFetchStatus(): Promise<BackgroundFetch.BackgroundFetchStatus | null> {
-  if (Platform.OS === "web" || isExpoGo) {
+  if (Platform.OS === "web") {
     return null;
   }
 

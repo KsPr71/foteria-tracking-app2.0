@@ -24,7 +24,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
-  
+
   version: "1.8.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -110,12 +110,7 @@ const config: ExpoConfig = {
         },
       },
     ],
-    [
-      "expo-background-fetch",
-      {
-        mode: "background",
-      },
-    ],
+    "expo-background-fetch",
   ],
   experiments: {
     typedRoutes: true,

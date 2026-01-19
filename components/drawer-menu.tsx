@@ -1,4 +1,5 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useNotifications } from "@/contexts/notifications-context";
 import { useColors } from "@/hooks/use-colors";
 import { updateBackgroundFetchInterval } from "@/lib/background-tasks";
 import { useThemeContext } from "@/lib/theme-provider";
@@ -28,6 +29,7 @@ const EMAIL = "foteriaestudio@gmail.com";
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const colors = useColors();
   const { colorScheme, setColorScheme } = useThemeContext();
+  const { checkNow } = useNotifications();
   const isDarkMode = colorScheme === "dark";
   const translateX = useSharedValue(-300);
   const [shouldRender, setShouldRender] = useState(false);
@@ -301,6 +303,31 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                       </View>
                     </View>
                   </View>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.menuItem,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        marginTop: 12,
+                      }
+                    ]}
+                    onPress={async () => {
+                      if (Platform.OS !== "web") {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      }
+                      onClose();
+                      // Pequeño delay para permitir que el drawer se cierre antes de iniciar la tarea pesada
+                      setTimeout(() => {
+                        checkNow();
+                      }, 300);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <IconSymbol name="arrow.clockwise.circle.fill" size={22} color={colors.primary} />
+                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>Verificar actualizaciones ahora</Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Navegación */}

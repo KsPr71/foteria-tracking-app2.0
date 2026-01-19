@@ -78,8 +78,8 @@ export default function Contratos() {
     <ScreenContainer className="p-4">
         <PageHeader 
           icon="dollarsign.circle.fill"
-          title="Lista de Precios"
-          subtitle="Consulta nuestros servicios y precios"
+          title="Ofertas y servicios"
+          subtitle="Consulta todas las opciones disponibles"
         />
 
       <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>

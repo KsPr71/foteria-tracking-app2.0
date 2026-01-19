@@ -246,17 +246,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                     <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 12 }} />
 
                     {/* Update Interval - Solo lectura */}
-                    <View style={styles.settingRow}>
-                      <View style={styles.settingLeft}>
-                        <IconSymbol name="clock.fill" size={22} color={colors.primary} />
-                        <View style={styles.settingContent}>
-                          <Text style={[styles.settingLabel, { color: colors.foreground }]}>Actualización</Text>
-                          <Text style={[styles.settingDescription, { color: colors.muted }]}>
-                            Cada 12 horas
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
+
                   </View>
                 </View>
 

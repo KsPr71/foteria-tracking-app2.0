@@ -34,6 +34,9 @@ export default function AboutModal() {
     }
     setColorScheme(value ? "dark" : "light");
   };
+  const handleAdminAccess = () => {
+    router.push("/admin");
+  };
 
   return (
     <ScreenContainer className="p-4">
@@ -98,10 +101,12 @@ export default function AboutModal() {
                   ios_backgroundColor={colors.border}
                   style={{ marginLeft: 12 }}
                 />
+
               </View>
             </View>
           </View>
         </View>
+        
 
         {/* Contact Info Card */}
         <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -141,6 +146,25 @@ export default function AboutModal() {
             </ThemedText>
           </View>
         </View>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.infoRow}>
+           
+              <View style={styles.infoContent}>
+              <ThemedText type="defaultSemiBold">Acceso</ThemedText>
+              <View style={styles.themeRow}>
+                <ThemedText style={{ flexShrink: 1 }}>{"Administrador" }</ThemedText>
+                <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: colors.surface }]}
+            onPress={handleAdminAccess}
+            activeOpacity={0.7}
+          >
+            <IconSymbol name="gearshape.fill" size={24} color={colors.muted} />
+          </TouchableOpacity>            
+
+              </View>
+            </View>
+          </View>
+        </View>
 
         {/* Copyright Card */}
         <View style={[styles.copyrightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -167,6 +191,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 24,
+  },
+  actionButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconWrap: {
     width: 64,
@@ -198,6 +229,7 @@ const styles = StyleSheet.create({
   infoContent: {
     flex: 1,
     gap: 4,
+     
   },
   themeRow: {
     flexDirection: "row",

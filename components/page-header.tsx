@@ -1,8 +1,7 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { useColors } from "@/hooks/use-colors";
 import { useDrawerContext } from "@/contexts/drawer-context";
+import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface PageHeaderProps {
@@ -23,9 +22,7 @@ export function PageHeader({ icon, iconSize = 42, title, subtitle }: PageHeaderP
     openDrawer();
   };
 
-  const handleAdminAccess = () => {
-    router.push("/admin");
-  };
+
 
   return (
     <View style={styles.container}>
@@ -42,13 +39,7 @@ export function PageHeader({ icon, iconSize = 42, title, subtitle }: PageHeaderP
           <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
         </View>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
-            onPress={handleAdminAccess}
-            activeOpacity={0.7}
-          >
-            <IconSymbol name="gearshape.fill" size={24} color={colors.muted} />
-          </TouchableOpacity>
+
         </View>
       </View>
 

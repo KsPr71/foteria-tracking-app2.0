@@ -25,16 +25,17 @@ const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
 
-  version: "1.8.4",
+  version: "1.8.5",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
-  owner: "kspr71", // Agregado aquí
+  owner: "synaptic", // Actualizado a la nueva organización
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
+    buildNumber: "21",
   },
   android: {
     adaptiveIcon: {
@@ -46,6 +47,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
+    versionCode: 21,
     permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {
@@ -118,7 +120,7 @@ const config: ExpoConfig = {
   },
   extra: {
     eas: {
-      projectId: "0efddc76-a27f-4b43-bcfc-8ecefe5e363e"
+      projectId: "8cf6ab93-8443-4163-b138-8764fae210bb"
     }
   }
 };

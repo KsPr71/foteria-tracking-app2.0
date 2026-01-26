@@ -1,0 +1,10 @@
+# Configuración para desplegar en Railway.
+# Root Directory del servicio debe ser: notification-service
+
+[build]
+buildCommand = "pnpm install && pnpm build"
+
+[deploy]
+startCommand = "pnpm start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30

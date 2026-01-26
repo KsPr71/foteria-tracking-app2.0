@@ -35,6 +35,15 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Notificaciones push (microservicio en la nube)
+
+El proyecto incluye un **microservicio de notificaciones** que envía push a la app cuando cambia el estado de las órdenes rastreadas. Está en `notification-service/`.
+
+1. **Desplegar el microservicio** (Railway, Render, Fly.io, etc.). Ver `notification-service/README.md`.
+2. **Configurar la app**: define `EXPO_PUBLIC_NOTIFICATION_SERVICE_URL` con la URL pública del servicio (ej. `https://tu-app.up.railway.app`) en `.env` o en las variables de EAS.
+
+Si no configuras la URL, la app sigue funcionando con notificaciones locales y polling en dispositivo; solo se desactiva el envío de push desde la nube.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:

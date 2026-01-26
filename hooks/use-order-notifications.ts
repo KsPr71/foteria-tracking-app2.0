@@ -1,3 +1,7 @@
+import {
+  registerPushToken,
+  syncTrackedOrders,
+} from "@/lib/notification-service-client";
 import { OrderService } from "@/lib/order-service";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import type { Order, OrderStatus } from "@/types/order";
@@ -156,10 +160,26 @@ export function useOrderNotifications() {
 
       // Actualizar badge siempre para reflejar el estado actual
       await updateBadge();
+
+      // Sincronizar órdenes rastreadas con el microservicio de notificaciones (cloud)
+      if (expoPushToken) {
+        try {
+          const tracked = await trackedOrdersService.getTrackedOrders();
+          await syncTrackedOrders(expoPushToken, tracked);
+        } catch (e) {
+          console.warn("[Notifications] Cloud sync failed:", e);
+        }
+      }
     } catch (error) {
       console.error("[Notifications] Error checking for status changes:", error);
     }
-  }, [trackedOrdersService, orderService, updateBadge, sendStatusChangeNotification]);
+  }, [
+    trackedOrdersService,
+    orderService,
+    updateBadge,
+    sendStatusChangeNotification,
+    expoPushToken,
+  ]);
 
   // Registrar para notificaciones push (solo en móvil, no en web ni Expo Go)
   useEffect(() => {
@@ -170,9 +190,19 @@ export function useOrderNotifications() {
     }
 
     registerForPushNotificationsAsync()
-      .then((token) => setExpoPushToken(token))
+      .then(async (token) => {
+        setExpoPushToken(token);
+        if (token) {
+          try {
+            await registerPushToken(token);
+            const tracked = await trackedOrdersService.getTrackedOrders();
+            await syncTrackedOrders(token, tracked);
+          } catch (e) {
+            console.warn("[Notifications] Cloud service register/sync failed:", e);
+          }
+        }
+      })
       .catch((error) => {
-        // Solo loggear errores, no romper la app
         console.warn("Error registering for push notifications:", error);
       });
 
@@ -258,12 +288,22 @@ export function useOrderNotifications() {
     };
   }, [checkForStatusChanges]);
 
-  // Función para verificar manualmente
+  // Verificar manualmente
   const checkNow = async () => {
     await checkForStatusChanges();
   };
 
-  // Función de prueba para mostrar el snackbar (útil para testing)
+  // Sincronizar órdenes rastreadas con el microservicio (p. ej. tras añadir/quitar)
+  const syncTrackedOrdersNow = useCallback(async () => {
+    if (!expoPushToken) return;
+    try {
+      const tracked = await trackedOrdersService.getTrackedOrders();
+      await syncTrackedOrders(expoPushToken, tracked);
+    } catch (e) {
+      console.warn("[Notifications] Cloud sync failed:", e);
+    }
+  }, [expoPushToken, trackedOrdersService]);
+
   const testSnackbar = useCallback(() => {
     const testMessage = "La orden Orden 01005-001-0003 del cliente Test Cliente ha cambiado a Edición";
     console.log("testSnackbar called, setting message:", testMessage);
@@ -277,6 +317,7 @@ export function useOrderNotifications() {
     notificationCount,
     checkNow,
     checkForChanges: checkForStatusChanges,
+    syncTrackedOrdersNow,
     updateBadge,
     snackbarMessage,
     snackbarVisible,

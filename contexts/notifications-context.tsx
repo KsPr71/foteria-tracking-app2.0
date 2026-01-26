@@ -9,6 +9,7 @@ interface NotificationsContextType {
   notificationCount: number;
   checkNow: () => Promise<void>;
   checkForChanges: () => Promise<void>;
+  syncTrackedOrdersNow: () => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);

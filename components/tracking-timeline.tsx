@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { Order, OrderStatus } from "@/types/order";
 import { STAGES } from "@/types/order";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
+import { useNotifications } from "@/contexts/notifications-context";
 import { useState, useEffect } from "react";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
@@ -18,6 +19,7 @@ interface TrackingTimelineProps {
 
 export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) {
   const colors = useColors();
+  const { syncTrackedOrdersNow } = useNotifications();
   const [isTracked, setIsTracked] = useState(false);
   const trackedOrdersService = TrackedOrdersService.getInstance();
 
@@ -52,16 +54,16 @@ export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) 
       if (isTracked) {
         await trackedOrdersService.removeTrackedOrder(order.orden);
         setIsTracked(false);
-        // Actualizar badge
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
         await Notifications.setBadgeCountAsync(unreadCount);
+        await syncTrackedOrdersNow();
         Alert.alert("Éxito", "Ya no recibirás notificaciones de esta orden");
       } else {
         await trackedOrdersService.addTrackedOrder(order);
         setIsTracked(true);
-        // Actualizar badge
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
         await Notifications.setBadgeCountAsync(unreadCount);
+        await syncTrackedOrdersNow();
         Alert.alert(
           "Orden guardada",
           "Recibirás notificaciones cuando el estado de esta orden cambie",

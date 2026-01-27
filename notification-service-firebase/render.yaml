@@ -1,0 +1,22 @@
+# Render Blueprint (opcional). También puedes crear el Web Service a mano.
+# https://render.com/docs/infrastructure-as-code
+services:
+  - type: web
+    name: foteria-notifications
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: SUPABASE_ORDERS_URL
+        value: https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json

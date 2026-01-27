@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tracked_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "push_token", "order": "ASCENDING" },
+        { "fieldPath": "order_number", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

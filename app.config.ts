@@ -47,7 +47,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    versionCode: 21,
+    versionCode: 22,
     permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {

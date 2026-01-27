@@ -16,6 +16,14 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.json({
+    service: "foteria-notifications",
+    endpoints: ["/api/health", "/api/register", "/api/tracked", "/api/unregister", "/api/cron"],
+    cron: "GET /api/cron?secret=CRON_SECRET",
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   try {
     getDb();

@@ -1,6 +1,8 @@
 import {
   registerPushToken,
   syncTrackedOrders,
+  testNotificationServiceConnection,
+  type TestConnectionResult,
 } from "@/lib/notification-service-client";
 import { OrderService } from "@/lib/order-service";
 import { TrackedOrdersService } from "@/lib/tracked-orders-service";
@@ -304,6 +306,19 @@ export function useOrderNotifications() {
     }
   }, [expoPushToken, trackedOrdersService]);
 
+  // En dev: registrar + sincronizar con un token de prueba (Expo Go no tiene token real).
+  const syncTrackedOrdersWithMockToken = useCallback(async () => {
+    const MOCK_TOKEN = "ExponentPushToken[expo-dev-test]";
+    try {
+      await registerPushToken(MOCK_TOKEN);
+      const tracked = await trackedOrdersService.getTrackedOrders();
+      await syncTrackedOrders(MOCK_TOKEN, tracked);
+    } catch (e) {
+      console.warn("[Notifications] Mock sync failed:", e);
+      throw e;
+    }
+  }, [trackedOrdersService]);
+
   const testSnackbar = useCallback(() => {
     const testMessage = "La orden Orden 01005-001-0003 del cliente Test Cliente ha cambiado a Edición";
     console.log("testSnackbar called, setting message:", testMessage);
@@ -312,17 +327,23 @@ export function useOrderNotifications() {
     console.log("Snackbar state updated");
   }, [setSnackbarMessage, setSnackbarVisible]);
 
+  const testConnection = useCallback((): Promise<TestConnectionResult> => {
+    return testNotificationServiceConnection();
+  }, []);
+
   return {
     expoPushToken,
     notificationCount,
     checkNow,
     checkForChanges: checkForStatusChanges,
     syncTrackedOrdersNow,
+    syncTrackedOrdersWithMockToken,
     updateBadge,
     snackbarMessage,
     snackbarVisible,
     setSnackbarVisible,
     testSnackbar,
+    testConnection,
   };
 }
 

@@ -280,6 +280,17 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                     <Text style={[styles.menuItemText, { color: colors.foreground }]}>Acerca de</Text>
                     <IconSymbol name="chevron.right" size={18} color={colors.muted} />
                   </TouchableOpacity>
+                  {__DEV__ && (
+                    <TouchableOpacity
+                      style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => handleNavigate("/dev/notification-test")}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol name="arrow.clockwise" size={22} color={colors.primary} />
+                      <Text style={[styles.menuItemText, { color: colors.foreground }]}>Probar notificaciones</Text>
+                      <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {/* Contacto */}

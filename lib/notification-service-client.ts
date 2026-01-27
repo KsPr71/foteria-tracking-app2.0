@@ -45,3 +45,37 @@ export async function unregisterPushToken(pushToken: string): Promise<void> {
   if (!hasNotificationService()) return;
   await api("/api/unregister", { method: "POST", json: { pushToken } });
 }
+
+export interface TestConnectionResult {
+  ok: boolean;
+  error?: string;
+  url?: string;
+}
+
+/**
+ * Probar conexión con el microservicio (GET /api/health).
+ * Útil en dev para verificar EXPO_PUBLIC_NOTIFICATION_SERVICE_URL y que Render responde.
+ */
+export async function testNotificationServiceConnection(): Promise<TestConnectionResult> {
+  if (!hasNotificationService()) {
+    return { ok: false, error: "EXPO_PUBLIC_NOTIFICATION_SERVICE_URL no configurada", url: "" };
+  }
+  try {
+    const res = await fetch(`${NOTIFICATION_SERVICE_URL}/api/health`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: (data as { error?: string }).error ?? `HTTP ${res.status}`,
+        url: NOTIFICATION_SERVICE_URL,
+      };
+    }
+    return { ok: !!data.ok, url: NOTIFICATION_SERVICE_URL };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, error: msg, url: NOTIFICATION_SERVICE_URL };
+  }
+}

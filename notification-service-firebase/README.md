@@ -44,6 +44,7 @@ pnpm dev
 - `PUT /api/tracked` — Actualizar órdenes rastreadas. Body: `{ "pushToken": "...", "orders": [ { "orderNumber": "...", "cliente": "...", "lastKnownStatus": 0 } ] }`
 - `POST /api/unregister` — Dar de baja. Body: `{ "pushToken": "..." }`
 - `GET|POST /api/cron` — Ejecuta el chequeo de órdenes. Requiere `?secret=CRON_SECRET` o header `X-Cron-Secret: CRON_SECRET`.
+- `GET /` — Información del servicio y listado de endpoints.
 
 ---
 
@@ -54,7 +55,7 @@ pnpm dev
 1. Ve a [Firebase Console](https://console.firebase.google.com) y crea un proyecto (o usa uno existente).
 2. **Build** → **Firestore Database** → **Create database** (modo producción, región cercana).
 3. **Project settings** (engranaje) → **Service accounts** → **Generate new private key**. Guarda el JSON.
-4. Despliega reglas e índices (desde la raíz de ` `):
+4. Despliega reglas e índices (desde la raíz de `notification-service-firebase`):
 
    ```bash
    cp .firebaserc.example .firebaserc
@@ -93,6 +94,11 @@ pnpm dev
 6. Guardar.
 
 Con esto, cada X minutos cron-job.org llama a `/api/cron`. Si el servicio estaba dormido (Render free), la petición lo despierta; al responder, se ejecuta el chequeo de órdenes y se envían las push si hay cambios.
+
+**Problemas frecuentes:**
+
+- **"Cannot GET"** al abrir la URL en el navegador: asegúrate de usar una ruta válida. `GET /` devuelve un JSON con los endpoints; `GET /api/health` es el health check.
+- **"Output too large"** en el test de cron-job.org: suele ocurrir cuando el servicio en Render estaba **dormido**. La primera petición devuelve una página HTML de “waking up” (no nuestro JSON) y cron-job.org la trata como salida demasiado grande. Espera ~1 minuto, vuelve a lanzar el cron o prueba antes `https://tu-app.onrender.com/api/health` en el navegador; cuando responda JSON, el servicio ya está despierto y `/api/cron?secret=...` debería funcionar.
 
 ### 4. App Android (Expo)
 

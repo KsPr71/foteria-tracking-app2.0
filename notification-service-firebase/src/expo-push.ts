@@ -42,11 +42,11 @@ export async function sendPushNotification(params: SendPushParams): Promise<bool
       },
     ]);
     for (const chunk of chunks) {
-      const tickets = (await expo.sendPushNotificationsAsync(chunk)) as Array<{
+      const tickets = (await expo.sendPushNotificationsAsync(chunk)) as {
         status?: string;
         message?: string;
         details?: { error?: string };
-      }>;
+      }[];
       for (let i = 0; i < tickets.length; i++) {
         const ticket = tickets[i];
         if (ticket?.status === "error") {

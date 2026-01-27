@@ -54,7 +54,7 @@ pnpm dev
 1. Ve a [Firebase Console](https://console.firebase.google.com) y crea un proyecto (o usa uno existente).
 2. **Build** → **Firestore Database** → **Create database** (modo producción, región cercana).
 3. **Project settings** (engranaje) → **Service accounts** → **Generate new private key**. Guarda el JSON.
-4. Despliega reglas e índices (desde la raíz de `notification-service-firebase`):
+4. Despliega reglas e índices (desde la raíz de ` `):
 
    ```bash
    cp .firebaserc.example .firebaserc

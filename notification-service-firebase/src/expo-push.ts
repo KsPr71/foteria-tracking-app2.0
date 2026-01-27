@@ -1,13 +1,19 @@
-import Expo from "expo-server-sdk";
+import expoServerSdk from "expo-server-sdk";
 import { CONFIG } from "./config.js";
 
-let expo: Expo | null = null;
+const Expo = (expoServerSdk as { default?: unknown }).default ?? expoServerSdk;
+const ExpoClass = Expo as new (opts?: { accessToken?: string }) => {
+  chunkPushNotifications: (msgs: unknown[]) => unknown[][];
+  sendPushNotificationsAsync: (chunk: unknown[]) => Promise<unknown[]>;
+};
 
-function getExpo(): Expo {
-  if (!expo) {
-    expo = new Expo({ accessToken: CONFIG.EXPO_ACCESS_TOKEN });
+let client: InstanceType<typeof ExpoClass> | null = null;
+
+function getExpo(): InstanceType<typeof ExpoClass> {
+  if (!client) {
+    client = new ExpoClass({ accessToken: CONFIG.EXPO_ACCESS_TOKEN });
   }
-  return expo;
+  return client;
 }
 
 export interface SendPushParams {
@@ -17,14 +23,16 @@ export interface SendPushParams {
   data?: Record<string, unknown>;
 }
 
+const EXPO_TOKEN_REGEX = /^ExponentPushToken\[.+\]$/;
+
 export async function sendPushNotification(params: SendPushParams): Promise<boolean> {
-  const client = getExpo();
-  if (!Expo.isExpoPushToken(params.to)) {
+  if (!EXPO_TOKEN_REGEX.test(params.to)) {
     console.warn("[ExpoPush] Invalid Expo push token:", params.to);
     return false;
   }
+  const expo = getExpo();
   try {
-    const chunks = client.chunkPushNotifications([
+    const chunks = expo.chunkPushNotifications([
       {
         to: params.to,
         title: params.title,
@@ -34,19 +42,16 @@ export async function sendPushNotification(params: SendPushParams): Promise<bool
       },
     ]);
     for (const chunk of chunks) {
-      const tickets = await client.sendPushNotificationsAsync(chunk);
+      const tickets = (await expo.sendPushNotificationsAsync(chunk)) as Array<{
+        status?: string;
+        message?: string;
+        details?: { error?: string };
+      }>;
       for (let i = 0; i < tickets.length; i++) {
         const ticket = tickets[i];
-        if (ticket && "status" in ticket && ticket.status === "error") {
-          const msg = "message" in ticket ? ticket.message : "Unknown error";
-          const details = "details" in ticket ? ticket.details : undefined;
-          console.warn("[ExpoPush] Ticket error:", msg, details);
-          if (
-            details &&
-            typeof details === "object" &&
-            "error" in details &&
-            details.error === "DeviceNotRegistered"
-          ) {
+        if (ticket?.status === "error") {
+          console.warn("[ExpoPush] Ticket error:", ticket.message, ticket.details);
+          if (ticket.details?.error === "DeviceNotRegistered") {
             return false;
           }
         }

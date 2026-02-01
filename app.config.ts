@@ -25,7 +25,7 @@ const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
 
-  version: "1.8.6",
+  version: "1.8.7",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -35,7 +35,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "22",
+    buildNumber: "23",
   },
   android: {
     adaptiveIcon: {
@@ -47,7 +47,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    versionCode: 22,
+    versionCode: 23,
     permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {

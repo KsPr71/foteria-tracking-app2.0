@@ -37,12 +37,14 @@ This command will move the starter code to the **app-example** directory and cre
 
 ## Notificaciones push (microservicio en la nube)
 
-El proyecto incluye un **microservicio de notificaciones** que envía push a la app cuando cambia el estado de las órdenes rastreadas. Está en `notification-service/`.
+El proyecto incluye un **microservicio de notificaciones** que envía push a la app cuando cambia el estado de las órdenes rastreadas. Ver `notification-service-firebase/README.md`.
 
-1. **Desplegar el microservicio** (Railway, Render, Fly.io, etc.). Ver `notification-service/README.md`.
-2. **Configurar la app**: define `EXPO_PUBLIC_NOTIFICATION_SERVICE_URL` con la URL pública del servicio (ej. `https://tu-app.up.railway.app`) en `.env` o en las variables de EAS.
+1. **Desplegar el microservicio** en Render (gratis). Ver `notification-service-firebase/README.md`.
+2. **Configurar la app**:
+   - **Desarrollo** (`.env`): `EXPO_PUBLIC_NOTIFICATION_SERVICE_URL=https://tu-app.onrender.com`
+   - **Producción** (`eas.json`): sustituye `YOUR_RENDER_APP` en cada perfil por el nombre real de tu servicio en Render (ej. si la URL es `https://foteria-notifications.onrender.com`, usa ese valor).
 
-Si no configuras la URL, la app sigue funcionando con notificaciones locales y polling en dispositivo; solo se desactiva el envío de push desde la nube.
+Si no configuras la URL, Firestore permanecerá vacío y no llegarán push; la app no registrará tokens ni sincronizará órdenes con el microservicio.
 
 ## Learn more
 

@@ -8,6 +8,7 @@ import {
   getDeviceByToken,
   deleteDevice,
   setTrackedOrders,
+  getStats,
 } from "./db.js";
 
 getDb(); // init Firebase at startup
@@ -19,18 +20,34 @@ app.use(express.json());
 app.get("/", (_req, res) => {
   res.json({
     service: "foteria-notifications",
-    endpoints: ["/api/health", "/api/register", "/api/tracked", "/api/unregister", "/api/cron"],
+    endpoints: ["/api/health", "/api/status", "/api/register", "/api/tracked", "/api/unregister", "/api/cron"],
     cron: "GET /api/cron?secret=CRON_SECRET",
   });
 });
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", async (_req, res) => {
   try {
-    getDb();
-  } catch {
+    const db = getDb();
+    // Verificar conexión real: intentar una lectura mínima
+    await db.collection("devices").limit(1).get();
+  } catch (e) {
+    console.error("[API] health Firestore error:", e instanceof Error ? e.message : String(e));
     return res.status(503).json({ ok: false, error: "database" });
   }
   res.json({ ok: true, timestamp: Date.now() });
+});
+
+app.get("/api/status", async (req, res) => {
+  if (CONFIG.CRON_SECRET && cronSecret(req) !== CONFIG.CRON_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const stats = await getStats();
+    res.json({ ok: true, ...stats });
+  } catch (e) {
+    console.error("[API] status error:", e);
+    res.status(500).json({ ok: false, error: "Failed to get stats" });
+  }
 });
 
 app.post("/api/register", async (req, res) => {
@@ -90,12 +107,6 @@ app.post("/api/unregister", async (req, res) => {
   const deleted = await deleteDevice(token);
   res.status(200).json({ ok: true, deleted });
 });
-
-function cronSecret(req: express.Request): string {
-  const q = typeof req.query?.secret === "string" ? req.query.secret : "";
-  const h = (req.headers["x-cron-secret"] as string) ?? "";
-  return q || h;
-}
 
 app.all("/api/cron", async (req, res) => {
   if (CONFIG.CRON_SECRET && cronSecret(req) !== CONFIG.CRON_SECRET) {

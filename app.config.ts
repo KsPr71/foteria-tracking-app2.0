@@ -25,7 +25,7 @@ const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
 
-  version: "1.8.7",
+  version: "1.8.8",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -47,7 +47,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    versionCode: 23,
+    versionCode: 24,
     permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {
@@ -82,7 +82,8 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        microphonePermission:
+          "Allow $(PRODUCT_NAME) to access your microphone.",
       },
     ],
     [
@@ -120,9 +121,9 @@ const config: ExpoConfig = {
   },
   extra: {
     eas: {
-      projectId: "8cf6ab93-8443-4163-b138-8764fae210bb"
-    }
-  }
+      projectId: "8cf6ab93-8443-4163-b138-8764fae210bb",
+    },
+  },
 };
 
 export default config;

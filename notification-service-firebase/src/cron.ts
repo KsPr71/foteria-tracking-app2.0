@@ -21,6 +21,7 @@ export async function runCheck(): Promise<void> {
   const ordersMap = new Map(orders.map((o) => [o.orden, o]));
 
   const devices = await getDevicesWithTrackedOrders();
+  console.log("[Cron] Devices with tracked orders:", devices.length);
   for (const { device, orders: tracked } of devices) {
     for (const row of tracked as TrackedOrderRow[]) {
       const current = ordersMap.get(row.order_number);

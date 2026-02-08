@@ -42,6 +42,7 @@ export async function upsertDevice(pushToken: string): Promise<DeviceRow> {
     id = ref.id;
   }
   const created = snap.empty ? now : (snap.docs[0].data().created_at as number);
+  console.log("[DB] Device upserted:", snap.empty ? "new" : "updated", "id=", id, "token=", pushToken.slice(0, 30) + "...");
   return { id, push_token: pushToken, created_at: created, updated_at: now };
 }
 
@@ -91,6 +92,7 @@ export async function setTrackedOrders(
     });
   }
   await batch.commit();
+  console.log("[DB] Tracked orders set:", orders.length, "for token", pushToken.slice(0, 30) + "...");
 }
 
 export async function getDevicesWithTrackedOrders(): Promise<
@@ -133,6 +135,18 @@ export async function getDevicesWithTrackedOrders(): Promise<
   return tokensSlice
     .filter((t) => deviceMap.has(t))
     .map((t) => ({ device: deviceMap.get(t)!, orders: byToken.get(t) ?? [] }));
+}
+
+export async function getStats(): Promise<{ devices: number; trackedOrders: number }> {
+  const database = db();
+  const [devicesSnap, ordersSnap] = await Promise.all([
+    database.collection(DEVICES).count().get(),
+    database.collection(TRACKED_ORDERS).count().get(),
+  ]);
+  return {
+    devices: devicesSnap.data().count,
+    trackedOrders: ordersSnap.data().count,
+  };
 }
 
 export async function updateTrackedOrderStatus(

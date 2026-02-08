@@ -39,7 +39,8 @@ pnpm dev
 
 ## API
 
-- `GET /api/health` — Health check.
+- `GET /api/health` — Health check (verifica Firestore).
+- `GET /api/status?secret=CRON_SECRET` — Diagnóstico: devuelve `{ ok, devices, trackedOrders }`.
 - `POST /api/register` — Registrar dispositivo. Body: `{ "pushToken": "ExponentPushToken[...]" }`
 - `PUT /api/tracked` — Actualizar órdenes rastreadas. Body: `{ "pushToken": "...", "orders": [ { "orderNumber": "...", "cliente": "...", "lastKnownStatus": 0 } ] }`
 - `POST /api/unregister` — Dar de baja. Body: `{ "pushToken": "..." }`
@@ -127,3 +128,38 @@ La app Android (Expo) está preparada: solo hay que definir `EXPO_PUBLIC_NOTIFIC
 ## Firestore
 
 Solo las Cloud Functions o, en este caso, el servicio Node en Render usan Firestore (con la cuenta de servicio). La app móvil **no** accede a Firestore directamente. Las reglas en `firestore.rules` deniegan lectura/escritura a clientes; el backend sigue teniendo acceso vía Admin SDK.
+
+## Diagnóstico: no veo notificaciones ni datos en Firestore
+
+### 1. Comprobar que Firestore recibe datos
+
+En Render, revisa los logs al arrancar. Debes ver:
+```
+[Firebase] Inicializado proyecto: tu-project-id
+```
+
+Si ves `FIREBASE_SERVICE_ACCOUNT_JSON no está configurada`, la variable no está definida o está vacía en Render → Environment.
+
+### 2. Endpoint de diagnóstico
+
+Llama a `GET https://tu-app.onrender.com/api/status?secret=TU_CRON_SECRET`. Devuelve:
+```json
+{ "ok": true, "devices": 0, "trackedOrders": 0 }
+```
+
+- Si `devices` y `trackedOrders` son 0, Firestore está vacío. La app no ha registrado tokens ni órdenes.
+
+### 3. La app debe llamar a register + tracked
+
+- **En Expo Go**: las notificaciones push remotas no funcionan. El hook no llama a register/sync automáticamente. Usa la pantalla **Probar notificaciones** (dev) → **Sincronizar órdenes (token de prueba)** para poblar Firestore con un token de prueba. El cron enviará push al token de prueba (útil solo para depurar el flujo).
+- **En build nativo** (APK/AAB): la app obtiene un Expo Push Token real, llama a `POST /api/register` y `PUT /api/tracked` al arrancar y al añadir/quitar órdenes. Asegúrate de que `EXPO_PUBLIC_NOTIFICATION_SERVICE_URL` esté en `eas.json` (perfil usado para el build).
+
+### 4. Orden de llamadas
+
+Primero `POST /api/register`, luego `PUT /api/tracked`. Si llamas solo a tracked sin registrar, responderá 404 "Device not registered".
+
+### 5. Verificar credenciales Firebase
+
+- El JSON de la cuenta de servicio debe tener `project_id`, `private_key` y `client_email`.
+- El proyecto debe tener Firestore activado y la base de datos por defecto creada.
+- En Render, pega el JSON como una sola línea (minificado) para evitar problemas con saltos de línea.

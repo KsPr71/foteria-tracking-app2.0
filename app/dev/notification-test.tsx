@@ -77,7 +77,7 @@ export default function NotificationTestScreen() {
             Probar microservicio de notificaciones
           </Text>
           <Text style={[styles.subtitle, { color: colors.muted }]}>
-            Pantalla de desarrollo. Configura EXPO_PUBLIC_NOTIFICATION_SERVICE_URL en .env.
+            Verifica conexión con el servicio y sincroniza órdenes rastreadas. Si hay problemas, prueba la conexión primero.
           </Text>
         </View>
 
@@ -104,7 +104,9 @@ export default function NotificationTestScreen() {
                 ? "Web"
                 : isExpoGo
                   ? "Expo Go"
-                  : "Development build"}
+                  : __DEV__
+                    ? "Development build"
+                    : "Production (APK)"}
             </Text>
           </View>
           <View style={styles.row}>

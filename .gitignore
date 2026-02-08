@@ -61,3 +61,7 @@ Thumbs.db
 *.tgz
 *.tar.gz
 .cache/
+
+# Firebase / Google credentials (NUNCA subir a git)
+*-adminsdk*.json
+*firebase*adminsdk*.json

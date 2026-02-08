@@ -1,4 +1,6 @@
 import type { ExpoConfig } from "expo/config";
+import * as fs from "fs";
+import * as path from "path";
 import "./scripts/load-env.js";
 
 // Bundle ID format: space.manus.<project_name_dots>.<timestamp>
@@ -38,6 +40,9 @@ const config: ExpoConfig = {
     buildNumber: "23",
   },
   android: {
+    ...(fs.existsSync(path.join(process.cwd(), "google-services.json")) && {
+      googleServicesFile: "./google-services.json",
+    }),
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/images/android-icon-foreground.png",

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "772724627174",
+    "project_id": "la-foteria-notifications",
+    "storage_bucket": "la-foteria-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:772724627174:android:d56012b6519597981bcd27",
+        "android_client_info": {
+          "package_name": "space.manus.la.foteria.tracking.t20260111021216"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsZDDKlUieREpoM-dGVTImAM1u4yQWF90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -37,6 +37,12 @@ app.get("/api/health", async (_req, res) => {
   res.json({ ok: true, timestamp: Date.now() });
 });
 
+function cronSecret(req: express.Request): string {
+  const q = typeof req.query?.secret === "string" ? req.query.secret : "";
+  const h = (req.headers["x-cron-secret"] as string) ?? "";
+  return q || h;
+}
+
 app.get("/api/status", async (req, res) => {
   if (CONFIG.CRON_SECRET && cronSecret(req) !== CONFIG.CRON_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });

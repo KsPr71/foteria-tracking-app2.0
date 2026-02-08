@@ -16,9 +16,13 @@ function initFirebase(): App {
     return app;
   }
   try {
-    const credential = JSON.parse(json) as ServiceAccount;
-    const projectId = credential.project_id ?? "(desconocido)";
-    if (!credential.project_id || !credential.private_key || !credential.client_email) {
+    const parsed = JSON.parse(json) as Record<string, unknown>;
+    const credential = parsed as ServiceAccount;
+    const projectId = String(parsed.project_id ?? parsed.projectId ?? "(desconocido)");
+    const hasProject = !!(parsed.project_id ?? parsed.projectId);
+    const hasKey = !!(parsed.private_key ?? parsed.privateKey);
+    const hasEmail = !!(parsed.client_email ?? parsed.clientEmail);
+    if (!hasProject || !hasKey || !hasEmail) {
       console.error("[Firebase] Credenciales incompletas. Verifica project_id, private_key y client_email.");
     } else {
       console.log("[Firebase] Inicializado proyecto:", projectId);

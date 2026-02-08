@@ -7,6 +7,12 @@ interface NotificationsContextType {
   setSnackbarVisible: (visible: boolean) => void;
   testSnackbar: () => void;
   testConnection: () => Promise<{ ok: boolean; error?: string; url?: string }>;
+  diagnosePushToken: () => Promise<{
+    token: string | null;
+    permissionsStatus: string;
+    error?: string;
+    projectId: string;
+  }>;
   notificationCount: number;
   checkNow: () => Promise<void>;
   checkForChanges: () => Promise<void>;

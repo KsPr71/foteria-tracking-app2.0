@@ -331,6 +331,55 @@ export function useOrderNotifications() {
     return testNotificationServiceConnection();
   }, []);
 
+  const diagnosePushToken = useCallback(async (): Promise<{
+    token: string | null;
+    permissionsStatus: string;
+    error?: string;
+    projectId: string;
+  }> => {
+    if (Platform.OS === "web" || isExpoGo) {
+      return {
+        token: null,
+        permissionsStatus: "N/A (web o Expo Go)",
+        projectId: "",
+      };
+    }
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ?? "8cf6ab93-8443-4163-b138-8764fae210bb";
+      if (finalStatus !== "granted") {
+        return {
+          token: null,
+          permissionsStatus: finalStatus,
+          projectId,
+          error: "Permisos de notificaciones no concedidos",
+        };
+      }
+      const result = await Notifications.getExpoPushTokenAsync({ projectId });
+      const token = result.data;
+      if (token) setExpoPushToken(token);
+      return {
+        token,
+        permissionsStatus: finalStatus,
+        projectId,
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return {
+        token: null,
+        permissionsStatus: "unknown",
+        projectId: Constants.expoConfig?.extra?.eas?.projectId ?? "8cf6ab93-8443-4163-b138-8764fae210bb",
+        error: msg,
+      };
+    }
+  }, []);
+
   return {
     expoPushToken,
     notificationCount,
@@ -344,6 +393,7 @@ export function useOrderNotifications() {
     setSnackbarVisible,
     testSnackbar,
     testConnection,
+    diagnosePushToken,
   };
 }
 

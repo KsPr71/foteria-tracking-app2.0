@@ -31,6 +31,7 @@ export default function NotificationTestScreen() {
     checkNow,
     syncTrackedOrdersNow,
     syncTrackedOrdersWithMockToken,
+    diagnosePushToken,
     expoPushToken,
   } = useNotifications();
   const [connectionResult, setConnectionResult] = useState<{
@@ -41,6 +42,13 @@ export default function NotificationTestScreen() {
   const [testing, setTesting] = useState(false);
   const [syncMockResult, setSyncMockResult] = useState<{ ok: boolean; error?: string } | null>(null);
   const [syncingMock, setSyncingMock] = useState(false);
+  const [diagnosticResult, setDiagnosticResult] = useState<{
+    token: string | null;
+    permissionsStatus: string;
+    error?: string;
+    projectId: string;
+  } | null>(null);
+  const [diagnosing, setDiagnosing] = useState(false);
 
   const handleTestConnection = async () => {
     setTesting(true);
@@ -50,6 +58,17 @@ export default function NotificationTestScreen() {
       setConnectionResult(result);
     } finally {
       setTesting(false);
+    }
+  };
+
+  const handleDiagnose = async () => {
+    setDiagnosing(true);
+    setDiagnosticResult(null);
+    try {
+      const result = await diagnosePushToken();
+      setDiagnosticResult(result);
+    } finally {
+      setDiagnosing(false);
     }
   };
 
@@ -115,6 +134,52 @@ export default function NotificationTestScreen() {
               {expoPushToken ? `${expoPushToken.slice(0, 20)}...` : "—"}
             </Text>
           </View>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Diagnosticar token</Text>
+          <Text style={[styles.hint, { color: colors.muted }]}>
+            Si el token no aparece arriba, pulsa para ver el motivo exacto (permisos, error, etc.).
+          </Text>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonSecondary, { borderColor: colors.border }]}
+            onPress={handleDiagnose}
+            disabled={diagnosing || Platform.OS === "web" || isExpoGo}
+            activeOpacity={0.7}
+          >
+            {diagnosing ? (
+              <ActivityIndicator size="small" color={colors.foreground} />
+            ) : (
+              <Text style={[styles.buttonTextSecondary, { color: colors.foreground }]}>
+                Diagnosticar token push
+              </Text>
+            )}
+          </TouchableOpacity>
+          {diagnosticResult && (
+            <View
+              style={[
+                styles.result,
+                {
+                  backgroundColor: diagnosticResult.token ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+                  borderColor: diagnosticResult.token ? "#22c55e" : "#ef4444",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.resultText,
+                  { color: diagnosticResult.token ? "#22c55e" : "#ef4444" },
+                ]}
+              >
+                {diagnosticResult.token
+                  ? `✓ Token: ${diagnosticResult.token.slice(0, 30)}...`
+                  : `✗ ${diagnosticResult.error ?? "Sin token"}`}
+              </Text>
+              <Text style={[styles.hint, { color: colors.muted, marginTop: 4 }]}>
+                Permisos: {diagnosticResult.permissionsStatus} • projectId: {diagnosticResult.projectId.slice(0, 8)}...
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>

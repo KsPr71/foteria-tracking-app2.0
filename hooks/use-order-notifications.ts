@@ -383,7 +383,8 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       return null;
     }
 
-    const projectId = "0efddc76-a27f-4b43-bcfc-8ecefe5e363e"; // De app.config.ts
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ?? "8cf6ab93-8443-4163-b138-8764fae210bb";
     token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
   } catch (error) {
     // No romper la app si falla, solo loggear

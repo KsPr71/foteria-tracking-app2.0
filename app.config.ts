@@ -123,6 +123,9 @@ const config: ExpoConfig = {
     eas: {
       projectId: "8cf6ab93-8443-4163-b138-8764fae210bb",
     },
+    notificationServiceUrl:
+      process.env.EXPO_PUBLIC_NOTIFICATION_SERVICE_URL ??
+      "https://foteria-tracking-app2-0.onrender.com",
   },
 };
 

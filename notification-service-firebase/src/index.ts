@@ -70,9 +70,19 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
+app.all("/api/tracked", (req, _res, next) => {
+  if (req.method !== "PUT") {
+    return _res
+      .status(405)
+      .json({ error: `Method ${req.method} not allowed. Use PUT with body: { pushToken, orders }` });
+  }
+  next();
+});
+
 app.put("/api/tracked", async (req, res) => {
   const token = typeof req.body?.pushToken === "string" ? req.body.pushToken.trim() : null;
   const raw = req.body?.orders;
+  console.log("[API] tracked:", { method: req.method, hasToken: !!token, ordersCount: Array.isArray(raw) ? raw.length : 0 });
   if (!token) {
     return res.status(400).json({ error: "pushToken is required" });
   }

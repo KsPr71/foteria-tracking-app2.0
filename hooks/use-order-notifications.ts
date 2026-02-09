@@ -299,6 +299,7 @@ export function useOrderNotifications() {
   const syncTrackedOrdersNow = useCallback(async () => {
     if (!expoPushToken) return;
     try {
+      await registerPushToken(expoPushToken);
       const tracked = await trackedOrdersService.getTrackedOrders();
       await syncTrackedOrders(expoPushToken, tracked);
     } catch (e) {

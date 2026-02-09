@@ -82,6 +82,7 @@ const config: ExpoConfig = {
         color: "#E6F4FE",
         sounds: [],
         mode: "production",
+        defaultChannel: "default",
       },
     ],
     [

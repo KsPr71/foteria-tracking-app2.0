@@ -10,9 +10,26 @@ import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Modal, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface DrawerMenuProps {
@@ -71,14 +88,18 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       // Usar withTiming con easing suave para el cierre para evitar brusquedad
       translateX.value = withTiming(-300, {
         duration: 300,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1)
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       });
-      backdropOpacity.value = withTiming(0, {
-        duration: 300,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-      }, () => {
-        runOnJS(setShouldRender)(false);
-      });
+      backdropOpacity.value = withTiming(
+        0,
+        {
+          duration: 300,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        },
+        () => {
+          runOnJS(setShouldRender)(false);
+        },
+      );
     }
   }, [visible, shouldRender, translateX, backdropOpacity]);
 
@@ -101,11 +122,11 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       if (event.translationX < -100) {
         translateX.value = withTiming(-300, {
           duration: 300,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
         backdropOpacity.value = withTiming(0, {
           duration: 300,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
         runOnJS(onClose)();
       } else {
@@ -162,7 +183,12 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   if (!shouldRender) return null;
 
   return (
-    <Modal visible={shouldRender} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={shouldRender}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+    >
       <View style={styles.container} pointerEvents="box-none">
         {/* Backdrop - Captura toques para cerrar */}
         <TouchableWithoutFeedback onPress={handleBackdropPress}>
@@ -176,7 +202,10 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
           <Animated.View
             style={[
               styles.drawer,
-              { backgroundColor: colors.background, borderRightColor: colors.border },
+              {
+                backgroundColor: colors.background,
+                borderRightColor: colors.border,
+              },
               animatedStyle,
             ]}
             pointerEvents="box-none"
@@ -186,26 +215,39 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 styles.drawerContent,
                 {
                   paddingTop: Math.max(insets.top, 20),
-                  paddingBottom: Math.max(insets.bottom, 20)
-                }
+                  paddingBottom: Math.max(insets.bottom, 20),
+                },
               ]}
               pointerEvents="auto"
             >
               {/* Header */}
               <View style={styles.header}>
-                <View style={[styles.iconWrap, { backgroundColor: colors.primary }]}>
+                <View
+                  style={[styles.iconWrap, { backgroundColor: colors.primary }]}
+                >
                   <IconSymbol name="info.circle.fill" size={32} color="#fff" />
                 </View>
                 <View style={styles.headerContent}>
-                  <Text style={[styles.brand, { color: colors.primary }]}>La Fotería</Text>
-                  <Text style={[styles.version, { color: colors.muted }]}>{APP_VERSION}</Text>
+                  <Text style={[styles.brand, { color: colors.primary }]}>
+                    La Fotería
+                  </Text>
+                  <Text style={[styles.version, { color: colors.muted }]}>
+                    {APP_VERSION}
+                  </Text>
                 </View>
                 <TouchableOpacity
                   onPress={onClose}
-                  style={[styles.closeButton, { backgroundColor: colors.surface }]}
+                  style={[
+                    styles.closeButton,
+                    { backgroundColor: colors.surface },
+                  ]}
                   activeOpacity={0.7}
                 >
-                  <IconSymbol name="xmark" size={20} color={colors.foreground} />
+                  <IconSymbol
+                    name="xmark"
+                    size={20}
+                    color={colors.foreground}
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -217,8 +259,20 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
               >
                 {/* Configuración */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Configuración</Text>
-                  <View style={[styles.settingCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.foreground }]}
+                  >
+                    Configuración
+                  </Text>
+                  <View
+                    style={[
+                      styles.settingCard,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
                     <View style={styles.settingRow}>
                       <View style={styles.settingLeft}>
                         <IconSymbol
@@ -227,8 +281,20 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                           color={colors.primary}
                         />
                         <View style={styles.settingContent}>
-                          <Text style={[styles.settingLabel, { color: colors.foreground }]}>Tema</Text>
-                          <Text style={[styles.settingDescription, { color: colors.muted }]}>
+                          <Text
+                            style={[
+                              styles.settingLabel,
+                              { color: colors.foreground },
+                            ]}
+                          >
+                            Tema
+                          </Text>
+                          <Text
+                            style={[
+                              styles.settingDescription,
+                              { color: colors.muted },
+                            ]}
+                          >
                             {isDarkMode ? "Modo oscuro" : "Modo claro"}
                           </Text>
                         </View>
@@ -236,72 +302,184 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                       <Switch
                         value={isDarkMode}
                         onValueChange={handleToggleTheme}
-                        trackColor={{ false: colors.border, true: colors.primary }}
-                        thumbColor={Platform.OS === "ios" ? "#ffffff" : colors.surface}
+                        trackColor={{
+                          false: colors.border,
+                          true: colors.primary,
+                        }}
+                        thumbColor={
+                          Platform.OS === "ios" ? "#ffffff" : colors.surface
+                        }
                         ios_backgroundColor={colors.border}
                       />
                     </View>
 
                     {/* Separator */}
-                    <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 12 }} />
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: colors.border,
+                        marginVertical: 12,
+                      }}
+                    />
 
                     {/* Update Interval - Solo lectura */}
-
                   </View>
                 </View>
 
                 {/* Navegación */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Navegación</Text>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.foreground }]}
+                  >
+                    Navegación
+                  </Text>
                   <TouchableOpacity
-                    style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    style={[
+                      styles.menuItem,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
                     onPress={() => handleNavigate("/contratos")}
                     activeOpacity={0.7}
                   >
-                    <IconSymbol name="dollarsign.circle.fill" size={22} color={colors.primary} />
-                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>Ofertas</Text>
-                    <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+                    <IconSymbol
+                      name="dollarsign.circle.fill"
+                      size={22}
+                      color={colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.menuItemText,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      Ofertas
+                    </Text>
+                    <IconSymbol
+                      name="chevron.right"
+                      size={18}
+                      color={colors.muted}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    style={[
+                      styles.menuItem,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
                     onPress={() => handleNavigate("/FAQ")}
                     activeOpacity={0.7}
                   >
-                    <IconSymbol name="questionmark.circle.fill" size={22} color={colors.primary} />
-                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>FAQ</Text>
-                    <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+                    <IconSymbol
+                      name="questionmark.circle.fill"
+                      size={22}
+                      color={colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.menuItemText,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      FAQ
+                    </Text>
+                    <IconSymbol
+                      name="chevron.right"
+                      size={18}
+                      color={colors.muted}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    style={[
+                      styles.menuItem,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
                     onPress={() => handleNavigate("/modal")}
                     activeOpacity={0.7}
                   >
-                    <IconSymbol name="info.circle.fill" size={22} color={colors.primary} />
-                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>Acerca de</Text>
-                    <IconSymbol name="chevron.right" size={18} color={colors.muted} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                    onPress={() => handleNavigate("/dev/notification-test")}
-                    activeOpacity={0.7}
-                  >
-                    <IconSymbol name="arrow.clockwise" size={22} color={colors.primary} />
-                    <Text style={[styles.menuItemText, { color: colors.foreground }]}>Notificaciones / Probar</Text>
-                    <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+                    <IconSymbol
+                      name="info.circle.fill"
+                      size={22}
+                      color={colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.menuItemText,
+                        { color: colors.foreground },
+                      ]}
+                    >
+                      Acerca de
+                    </Text>
+                    <IconSymbol
+                      name="chevron.right"
+                      size={18}
+                      color={colors.muted}
+                    />
                   </TouchableOpacity>
                 </View>
 
                 {/* Contacto */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Contacto</Text>
-                  <View style={[styles.contactCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <TouchableOpacity style={styles.contactRow} onPress={() => handleContact("email")} activeOpacity={0.7}>
-                      <IconSymbol name="envelope.fill" size={20} color={colors.primary} />
-                      <Text style={[styles.contactText, { color: colors.foreground }]} numberOfLines={1} ellipsizeMode="tail">{EMAIL}</Text>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.foreground }]}
+                  >
+                    Contacto
+                  </Text>
+                  <View
+                    style={[
+                      styles.contactCard,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <TouchableOpacity
+                      style={styles.contactRow}
+                      onPress={() => handleContact("email")}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol
+                        name="envelope.fill"
+                        size={20}
+                        color={colors.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.contactText,
+                          { color: colors.foreground },
+                        ]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {EMAIL}
+                      </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.contactRow} onPress={() => handleContact("phone")} activeOpacity={0.7}>
-                      <IconSymbol name="phone.fill" size={20} color={colors.primary} />
-                      <Text style={[styles.contactText, { color: colors.foreground }]}>+53 5371 0376</Text>
+                    <TouchableOpacity
+                      style={styles.contactRow}
+                      onPress={() => handleContact("phone")}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol
+                        name="phone.fill"
+                        size={20}
+                        color={colors.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.contactText,
+                          { color: colors.foreground },
+                        ]}
+                      >
+                        +53 5371 0376
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.contactRow}
@@ -309,11 +487,20 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                       activeOpacity={0.7}
                     >
                       <FontAwesome name="whatsapp" size={20} color="#25D366" />
-                      <Text style={[styles.contactText, { color: "#25D366" }]}>WhatsApp</Text>
+                      <Text style={[styles.contactText, { color: "#25D366" }]}>
+                        WhatsApp
+                      </Text>
                     </TouchableOpacity>
                     <View style={styles.contactRow}>
-                      <IconSymbol name="mappin.circle.fill" size={20} color={colors.muted} />
-                      <Text style={[styles.contactText, { color: colors.muted }]} numberOfLines={2}>
+                      <IconSymbol
+                        name="mappin.circle.fill"
+                        size={20}
+                        color={colors.muted}
+                      />
+                      <Text
+                        style={[styles.contactText, { color: colors.muted }]}
+                        numberOfLines={2}
+                      >
                         Calle Ignacio Agramonte nº 110
                       </Text>
                     </View>
@@ -322,36 +509,90 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
                 {/* Redes Sociales */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Redes Sociales</Text>
-                  <View style={[styles.socialCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.foreground }]}
+                  >
+                    Redes Sociales
+                  </Text>
+                  <View
+                    style={[
+                      styles.socialCard,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
                     <View style={styles.socialIcons}>
                       <TouchableOpacity
-                        onPress={() => handleSocialPress("https://www.facebook.com/foteriaestudio")}
-                        style={[styles.socialIconButton, { backgroundColor: colors.background }]}
+                        onPress={() =>
+                          handleSocialPress(
+                            "https://www.facebook.com/foteriaestudio",
+                          )
+                        }
+                        style={[
+                          styles.socialIconButton,
+                          { backgroundColor: colors.background },
+                        ]}
                         activeOpacity={0.7}
                       >
-                        <FontAwesome name="facebook" size={24} color={colors.primary} />
+                        <FontAwesome
+                          name="facebook"
+                          size={24}
+                          color={colors.primary}
+                        />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleSocialPress("https://x.com/Foteria_estudio")}
-                        style={[styles.socialIconButton, { backgroundColor: colors.background }]}
+                        onPress={() =>
+                          handleSocialPress("https://x.com/Foteria_estudio")
+                        }
+                        style={[
+                          styles.socialIconButton,
+                          { backgroundColor: colors.background },
+                        ]}
                         activeOpacity={0.7}
                       >
-                        <FontAwesome name="twitter" size={24} color={colors.primary} />
+                        <FontAwesome
+                          name="twitter"
+                          size={24}
+                          color={colors.primary}
+                        />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleSocialPress("https://www.instagram.com/la_foteria_fotostudio/")}
-                        style={[styles.socialIconButton, { backgroundColor: colors.background }]}
+                        onPress={() =>
+                          handleSocialPress(
+                            "https://www.instagram.com/la_foteria_fotostudio/",
+                          )
+                        }
+                        style={[
+                          styles.socialIconButton,
+                          { backgroundColor: colors.background },
+                        ]}
                         activeOpacity={0.7}
                       >
-                        <FontAwesome name="instagram" size={24} color={colors.primary} />
+                        <FontAwesome
+                          name="instagram"
+                          size={24}
+                          color={colors.primary}
+                        />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleSocialPress("https://lafoteria-gallery.mypixieset.com/")}
-                        style={[styles.socialIconButton, { backgroundColor: colors.background }]}
+                        onPress={() =>
+                          handleSocialPress(
+                            "https://lafoteria-gallery.mypixieset.com/",
+                          )
+                        }
+                        style={[
+                          styles.socialIconButton,
+                          { backgroundColor: colors.background },
+                        ]}
                         activeOpacity={0.7}
                       >
-                        <FontAwesome name="globe" size={24} color={colors.primary} />
+                        <FontAwesome
+                          name="globe"
+                          size={24}
+                          color={colors.primary}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -360,8 +601,12 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
               {/* Copyright - Fixed at bottom */}
               <View style={[styles.footer, { borderTopColor: colors.border }]}>
-                <Text style={[styles.copyright, { color: colors.muted }]} numberOfLines={2}>
-                  © {new Date().getFullYear()} La Fotería. Todos los derechos reservados.
+                <Text
+                  style={[styles.copyright, { color: colors.muted }]}
+                  numberOfLines={2}
+                >
+                  © {new Date().getFullYear()} La Fotería. Todos los derechos
+                  reservados.
                 </Text>
               </View>
             </View>

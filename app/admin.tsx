@@ -1,29 +1,32 @@
-import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-} from "react-native";
-import * as Haptics from "expo-haptics";
-import * as DocumentPicker from "expo-document-picker";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { AdminService } from "@/lib/admin-service";
+import * as DocumentPicker from "expo-document-picker";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function AdminScreen() {
   const colors = useColors();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
-  const [selectedFile, setSelectedFile] = useState<{ name: string; content: string } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{
+    name: string;
+    content: string;
+  } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const adminService = AdminService.getInstance();
@@ -123,6 +126,13 @@ export default function AdminScreen() {
     }
   };
 
+  const handleNavigate = (path: string) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(path as any);
+  };
+
   // Pantalla de login
   if (!isAuthenticated) {
     return (
@@ -143,17 +153,32 @@ export default function AdminScreen() {
                 onPress={handleBack}
                 activeOpacity={0.7}
               >
-                <IconSymbol name="arrow.left" size={24} color={colors.foreground} />
+                <IconSymbol
+                  name="arrow.left"
+                  size={24}
+                  color={colors.foreground}
+                />
               </TouchableOpacity>
 
               <View style={styles.loginContainer}>
                 <View style={styles.iconContainer}>
-                  <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
-                    <IconSymbol name="gearshape.fill" size={40} color="#ffffff" />
+                  <View
+                    style={[
+                      styles.iconCircle,
+                      { backgroundColor: colors.primary },
+                    ]}
+                  >
+                    <IconSymbol
+                      name="gearshape.fill"
+                      size={40}
+                      color="#ffffff"
+                    />
                   </View>
                 </View>
 
-                <Text style={[styles.title, { color: colors.foreground }]}>Panel de Administración</Text>
+                <Text style={[styles.title, { color: colors.foreground }]}>
+                  Panel de Administración
+                </Text>
                 <Text style={[styles.subtitle, { color: colors.muted }]}>
                   Ingresa la contraseña para acceder
                 </Text>
@@ -162,7 +187,11 @@ export default function AdminScreen() {
                   <TextInput
                     style={[
                       styles.passwordInput,
-                      { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border },
+                      {
+                        backgroundColor: colors.surface,
+                        color: colors.foreground,
+                        borderColor: colors.border,
+                      },
                     ]}
                     placeholder="Contraseña"
                     placeholderTextColor={colors.muted}
@@ -176,7 +205,10 @@ export default function AdminScreen() {
                   />
 
                   <TouchableOpacity
-                    style={[styles.loginButton, { backgroundColor: colors.primary }]}
+                    style={[
+                      styles.loginButton,
+                      { backgroundColor: colors.primary },
+                    ]}
                     onPress={handleLogin}
                     activeOpacity={0.8}
                   >
@@ -202,9 +234,15 @@ export default function AdminScreen() {
               onPress={handleBack}
               activeOpacity={0.7}
             >
-              <IconSymbol name="arrow.left" size={24} color={colors.foreground} />
+              <IconSymbol
+                name="arrow.left"
+                size={24}
+                color={colors.foreground}
+              />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.foreground }]}>Administración</Text>
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+              Administración
+            </Text>
             <TouchableOpacity
               style={[styles.logoutButton, { backgroundColor: colors.surface }]}
               onPress={handleLogout}
@@ -215,30 +253,60 @@ export default function AdminScreen() {
           </View>
 
           {/* Actualizar datos de órdenes */}
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>Actualizar datos de órdenes</Text>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              Actualizar datos de órdenes
+            </Text>
             <Text style={[styles.cardText, { color: colors.muted }]}>
-              Selecciona un archivo JSON con los datos actualizados de las órdenes. El archivo será validado y subido
-              al servidor.
+              Selecciona un archivo JSON con los datos actualizados de las
+              órdenes. El archivo será validado y subido al servidor.
             </Text>
 
             {selectedFile && (
-              <View style={[styles.filePreview, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <IconSymbol name="paperplane.fill" size={24} color={colors.primary} />
+              <View
+                style={[
+                  styles.filePreview,
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <IconSymbol
+                  name="paperplane.fill"
+                  size={24}
+                  color={colors.primary}
+                />
                 <View style={styles.fileInfo}>
-                  <Text style={[styles.fileName, { color: colors.foreground }]}>{selectedFile.name}</Text>
+                  <Text style={[styles.fileName, { color: colors.foreground }]}>
+                    {selectedFile.name}
+                  </Text>
                   <Text style={[styles.fileSize, { color: colors.muted }]}>
                     {(selectedFile.content.length / 1024).toFixed(2)} KB
                   </Text>
                 </View>
-                <TouchableOpacity onPress={() => setSelectedFile(null)} activeOpacity={0.7}>
+                <TouchableOpacity
+                  onPress={() => setSelectedFile(null)}
+                  activeOpacity={0.7}
+                >
                   <IconSymbol name="xmark" size={20} color={colors.error} />
                 </TouchableOpacity>
               </View>
             )}
 
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.primary, borderColor: colors.primary }]}
+              style={[
+                styles.button,
+                {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                },
+              ]}
               onPress={handleSelectFile}
               activeOpacity={0.8}
               disabled={isUploading}
@@ -251,7 +319,10 @@ export default function AdminScreen() {
               <TouchableOpacity
                 style={[
                   styles.button,
-                  { backgroundColor: colors.success, borderColor: colors.success },
+                  {
+                    backgroundColor: colors.success,
+                    borderColor: colors.success,
+                  },
                   isUploading && styles.buttonDisabled,
                 ]}
                 onPress={handleUpload}
@@ -262,7 +333,11 @@ export default function AdminScreen() {
                   <ActivityIndicator color="#ffffff" />
                 ) : (
                   <>
-                    <IconSymbol name="paperplane.fill" size={20} color="#ffffff" />
+                    <IconSymbol
+                      name="paperplane.fill"
+                      size={20}
+                      color="#ffffff"
+                    />
                     <Text style={styles.buttonText}>Subir archivo</Text>
                   </>
                 )}
@@ -270,12 +345,40 @@ export default function AdminScreen() {
             )}
           </View>
 
-          <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.warning }]}>
-            <Text style={[styles.infoTitle, { color: colors.warning }]}>⚠️ Importante</Text>
-            <Text style={[styles.infoText, { color: colors.muted }]}>
-              El archivo JSON debe tener la estructura correcta con los campos: metadata, data (array de órdenes con
-              cliente, orden, fecha, estado, productos_entrega_parcial).
+          <View
+            style={[
+              styles.infoCard,
+              { backgroundColor: colors.surface, borderColor: colors.warning },
+            ]}
+          >
+            <Text style={[styles.infoTitle, { color: colors.warning }]}>
+              ⚠️ Importante
             </Text>
+            <Text style={[styles.infoText, { color: colors.muted }]}>
+              El archivo JSON debe tener la estructura correcta con los campos:
+              metadata, data (array de órdenes con cliente, orden, fecha,
+              estado, productos_entrega_parcial).
+            </Text>
+          </View>
+          <View>
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={() => handleNavigate("/dev/notification-test")}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                name="arrow.clockwise"
+                size={22}
+                color={colors.primary}
+              />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Notificaciones / Probar
+              </Text>
+              <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -427,5 +530,19 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+    gap: 12,
+  },
+  menuItemText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

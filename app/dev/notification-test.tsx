@@ -33,6 +33,7 @@ export default function NotificationTestScreen() {
     syncTrackedOrdersWithMockToken,
     diagnosePushToken,
     expoPushToken,
+    tokenFetchError,
   } = useNotifications();
   const [connectionResult, setConnectionResult] = useState<{
     ok: boolean;
@@ -178,6 +179,30 @@ export default function NotificationTestScreen() {
               <Text style={[styles.hint, { color: colors.muted, marginTop: 4 }]}>
                 Permisos: {diagnosticResult.permissionsStatus} • projectId: {diagnosticResult.projectId.slice(0, 8)}...
               </Text>
+              {!diagnosticResult.token &&
+                (diagnosticResult.error?.includes("SERVICE_NOT_AVAILABLE") ||
+                  diagnosticResult.error?.toLowerCase().includes("service")) && (
+                <Text style={[styles.hint, { color: colors.primary, marginTop: 8 }]}>
+                  💡 Prueba con datos móviles o VPN y vuelve a diagnosticar.
+                </Text>
+              )}
+            </View>
+          )}
+          {tokenFetchError && !diagnosticResult && (
+            <View
+              style={[
+                styles.result,
+                { backgroundColor: "rgba(239,68,68,0.1)", borderColor: "#ef4444" },
+              ]}
+            >
+              <Text style={[styles.resultText, { color: "#ef4444" }]}>
+                ✗ Error al arrancar: {tokenFetchError}
+              </Text>
+              {tokenFetchError.includes("SERVICE_NOT_AVAILABLE") && (
+                <Text style={[styles.hint, { color: colors.primary, marginTop: 8 }]}>
+                  💡 Prueba con datos móviles o VPN y pulsa "Diagnosticar token push".
+                </Text>
+              )}
             </View>
           )}
         </View>

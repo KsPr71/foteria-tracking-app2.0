@@ -46,6 +46,7 @@ export interface StatusChangeNotification {
 
 export function useOrderNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [tokenFetchError, setTokenFetchError] = useState<string | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -192,7 +193,12 @@ export function useOrderNotifications() {
     }
 
     registerForPushNotificationsAsync()
-      .then(async (token) => {
+      .then(async (result) => {
+        const token =
+          typeof result === "string" ? result : (result && typeof result === "object" ? result.token ?? null : null);
+        const error =
+          result && typeof result === "object" && "error" in result ? (result as { error?: string }).error : null;
+        setTokenFetchError(error ?? null);
         setExpoPushToken(token);
         if (token) {
           try {
@@ -205,6 +211,8 @@ export function useOrderNotifications() {
         }
       })
       .catch((error) => {
+        const msg = error instanceof Error ? error.message : String(error);
+        setTokenFetchError(msg);
         console.warn("Error registering for push notifications:", error);
       });
 
@@ -364,7 +372,10 @@ export function useOrderNotifications() {
       }
       const result = await Notifications.getExpoPushTokenAsync({ projectId });
       const token = result.data;
-      if (token) setExpoPushToken(token);
+      if (token) {
+        setExpoPushToken(token);
+        setTokenFetchError(null);
+      }
       return {
         token,
         permissionsStatus: finalStatus,
@@ -372,6 +383,7 @@ export function useOrderNotifications() {
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      setTokenFetchError(msg);
       return {
         token: null,
         permissionsStatus: "unknown",
@@ -383,6 +395,7 @@ export function useOrderNotifications() {
 
   return {
     expoPushToken,
+    tokenFetchError,
     notificationCount,
     checkNow,
     checkForChanges: checkForStatusChanges,
@@ -398,13 +411,16 @@ export function useOrderNotifications() {
   };
 }
 
-async function registerForPushNotificationsAsync(): Promise<string | null> {
+async function registerForPushNotificationsAsync(): Promise<
+  { token: string | null; error?: string } | string | null
+> {
   // No intentar registrar notificaciones push en web o Expo Go
   if (Platform.OS === "web" || isExpoGo) {
     return null;
   }
 
   let token: string | null = null;
+  let errorMsg: string | undefined;
 
   if (Platform.OS === "android") {
     try {
@@ -415,8 +431,9 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
         lightColor: "#FF231F7C",
       });
     } catch (error) {
+      errorMsg = error instanceof Error ? error.message : String(error);
       console.warn("Error setting notification channel:", error);
-      return null;
+      return { token: null, error: errorMsg };
     }
   }
 
@@ -430,18 +447,17 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
 
     if (finalStatus !== "granted") {
-      console.warn("Failed to get push token for push notification!");
-      return null;
+      errorMsg = "Permisos no concedidos";
+      return { token: null, error: errorMsg };
     }
 
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ?? "8cf6ab93-8443-4163-b138-8764fae210bb";
     token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    return token ? token : { token: null, error: "Token vacío" };
   } catch (error) {
-    // No romper la app si falla, solo loggear
-    // En Expo Go esto fallará silenciosamente
-    console.warn("Error getting Expo push token (expected in Expo Go):", error);
+    errorMsg = error instanceof Error ? error.message : String(error);
+    console.warn("Error getting Expo push token:", error);
+    return { token: null, error: errorMsg };
   }
-
-  return token;
 }

@@ -2,7 +2,7 @@ import "dotenv/config";
 
 const SUPABASE_ORDERS_URL =
   process.env.SUPABASE_ORDERS_URL ??
-  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json";
+  "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/datos-ordenes.json";
 const PORT = parseInt(process.env.PORT ?? "3100", 10);
 const CRON_INTERVAL_MINUTES = Math.max(
   1,

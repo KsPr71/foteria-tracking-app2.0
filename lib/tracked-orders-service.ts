@@ -4,6 +4,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const TRACKED_ORDERS_KEY = "tracked_orders";
 const TRACKED_ORDERS_STATES_KEY = "tracked_orders_states";
 const UPDATE_INTERVAL_KEY = "update_interval";
+const TRACKED_ORDERS_SOURCE_KEY = "tracked_orders_source";
+const CURRENT_ORDERS_SOURCE = "odoo-supabase-ordenes-v1";
 
 export interface TrackedOrder {
   orderNumber: string;
@@ -71,6 +73,15 @@ export class TrackedOrdersService {
    */
   async getTrackedOrders(): Promise<TrackedOrder[]> {
     try {
+      const source = await AsyncStorage.getItem(TRACKED_ORDERS_SOURCE_KEY);
+      if (source !== CURRENT_ORDERS_SOURCE) {
+        await Promise.all([
+          AsyncStorage.removeItem(TRACKED_ORDERS_KEY),
+          AsyncStorage.removeItem(TRACKED_ORDERS_STATES_KEY),
+          AsyncStorage.setItem(TRACKED_ORDERS_SOURCE_KEY, CURRENT_ORDERS_SOURCE),
+        ]);
+        return [];
+      }
       const data = await AsyncStorage.getItem(TRACKED_ORDERS_KEY);
       if (!data) return [];
       const orders = JSON.parse(data);

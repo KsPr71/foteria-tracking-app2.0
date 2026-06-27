@@ -1,7 +1,7 @@
 import type { CategoryGroup, PriceData, Product } from "@/types/price";
 
 const SUPABASE_URL =
-  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/precios.json";
+  "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/precios.json";
 
 export class PriceService {
   private static instance: PriceService;

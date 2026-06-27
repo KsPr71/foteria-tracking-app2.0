@@ -23,9 +23,9 @@ import {
 } from "react-native";
 
 const SUPABASE_ORDERS_URL =
-  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json";
+  "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/datos-ordenes.json";
 const SUPABASE_PRICES_URL =
-  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/precios.json";
+  "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/precios.json";
 
 export default function HomeScreen() {
   const colors = useColors();

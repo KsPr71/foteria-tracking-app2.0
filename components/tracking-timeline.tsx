@@ -9,8 +9,16 @@ import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import { useNotifications } from "@/contexts/notifications-context";
 import { useState, useEffect } from "react";
 import * as Haptics from "expo-haptics";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
-import * as Notifications from "expo-notifications";
+
+async function updateNotificationBadge(count: number) {
+  if (Platform.OS === "web" || Constants.executionEnvironment === "storeClient") {
+    return;
+  }
+  const notifications = await import("expo-notifications");
+  await notifications.setBadgeCountAsync(count);
+}
 
 interface TrackingTimelineProps {
   order: Order;
@@ -34,7 +42,7 @@ export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) 
       await trackedOrdersService.markOrderAsRead(order.orden);
       // Actualizar badge inmediatamente
       const unreadCount = await trackedOrdersService.getUnreadChangesCount();
-      await Notifications.setBadgeCountAsync(unreadCount);
+      await updateNotificationBadge(unreadCount);
     } catch (error) {
       console.error("Error marking order as read:", error);
     }
@@ -55,14 +63,14 @@ export function TrackingTimeline({ order, onNewSearch }: TrackingTimelineProps) 
         await trackedOrdersService.removeTrackedOrder(order.orden);
         setIsTracked(false);
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
-        await Notifications.setBadgeCountAsync(unreadCount);
+        await updateNotificationBadge(unreadCount);
         await syncTrackedOrdersNow();
         Alert.alert("Éxito", "Ya no recibirás notificaciones de esta orden");
       } else {
         await trackedOrdersService.addTrackedOrder(order);
         setIsTracked(true);
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
-        await Notifications.setBadgeCountAsync(unreadCount);
+        await updateNotificationBadge(unreadCount);
         await syncTrackedOrdersNow();
         Alert.alert(
           "Orden guardada",

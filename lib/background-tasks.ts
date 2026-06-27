@@ -2,7 +2,6 @@ import type { Order } from "@/types/order";
 import { STAGES } from "@/types/order";
 import * as BackgroundFetch from "expo-background-fetch";
 import Constants from "expo-constants";
-import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
 import { Platform } from "react-native";
 import { OrderService } from "./order-service";
@@ -18,6 +17,10 @@ const isExpoGo = Constants.executionEnvironment === "storeClient";
  */
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   try {
+    const notifications =
+      Platform.OS !== "web" && !isExpoGo
+        ? await import("expo-notifications")
+        : null;
     console.log("[BackgroundTask] Starting background order check...");
 
     const orderService = OrderService.getInstance();
@@ -68,7 +71,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         // Enviar notificación push (local)
         if (Platform.OS !== "web") {
           try {
-            await Notifications.scheduleNotificationAsync({
+            await notifications?.scheduleNotificationAsync({
               content: {
                 title: `Actualización de pedido: ${tracked.orderNumber}`,
                 body: message,
@@ -79,7 +82,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
                 },
                 sound: true,
                 badge: newUnreadCount,
-                priority: Notifications.AndroidNotificationPriority.HIGH,
+                priority: notifications.AndroidNotificationPriority.HIGH,
               },
               trigger: null, // Enviar inmediatamente
             });
@@ -94,7 +97,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     if (Platform.OS !== "web") {
       try {
         const unreadCount = await trackedOrdersService.getUnreadChangesCount();
-        await Notifications.setBadgeCountAsync(unreadCount);
+        await notifications?.setBadgeCountAsync(unreadCount);
       } catch (error) {
         console.warn("[BackgroundTask] Error updating badge:", error);
       }

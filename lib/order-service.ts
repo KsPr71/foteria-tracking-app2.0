@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Order, OrderData } from "@/types/order";
 
 const SUPABASE_URL =
-  "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json";
-const CACHE_KEY = "orders_data";
-const CACHE_TIMESTAMP_KEY = "orders_data_timestamp";
+  "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/datos-ordenes.json";
+const CACHE_KEY = "orders_data_odoo_v1";
+const CACHE_TIMESTAMP_KEY = "orders_data_odoo_v1_timestamp";
 const CACHE_DURATION = 1000 * 60 * 30; // 30 minutos
 
 export class OrderService {

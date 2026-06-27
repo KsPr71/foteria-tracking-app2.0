@@ -19,4 +19,4 @@ services:
       - key: CRON_SECRET
         sync: false
       - key: SUPABASE_ORDERS_URL
-        value: https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json
+        value: https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/datos-ordenes.json

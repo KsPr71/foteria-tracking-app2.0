@@ -9,31 +9,38 @@ import { TrackedOrdersService } from "@/lib/tracked-orders-service";
 import type { Order, OrderStatus } from "@/types/order";
 import { STAGES } from "@/types/order";
 import Constants from "expo-constants";
-import * as Notifications from "expo-notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Platform } from "react-native";
 
 // Detectar si está en Expo Go (donde las notificaciones push remotas no funcionan)
 const isExpoGo = Constants.executionEnvironment === "storeClient";
+type NotificationsModule = typeof import("expo-notifications");
+type NotificationSubscription = { remove: () => void };
+let notificationsPromise: Promise<NotificationsModule> | null = null;
+
+async function getNotifications(): Promise<NotificationsModule | null> {
+  if (Platform.OS === "web" || isExpoGo) {
+    return null;
+  }
+  if (!notificationsPromise) {
+    notificationsPromise = import("expo-notifications").then((notifications) => {
+      notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+      return notifications;
+    });
+  }
+  return notificationsPromise;
+}
 
 // Configurar cómo se manejan las notificaciones cuando la app está en primer plano
 // Solo en móvil
-if (Platform.OS !== "web") {
-  try {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    });
-  } catch {
-    // Silenciar errores en Expo Go
-    console.warn("Notifications not available in Expo Go");
-  }
-}
 
 const CHECK_INTERVAL = 1000 * 60 * 15; // Verificar cada 15 minutos
 
@@ -61,7 +68,8 @@ export function useOrderNotifications() {
       // Solo actualizar badge en móvil (no en web)
       if (Platform.OS !== "web") {
         try {
-          await Notifications.setBadgeCountAsync(unreadCount);
+          const notifications = await getNotifications();
+          await notifications?.setBadgeCountAsync(unreadCount);
         } catch (error) {
           // Silenciar errores de badge en Expo Go
           console.warn("Error updating badge:", error);
@@ -101,7 +109,8 @@ export function useOrderNotifications() {
     // En Expo Go, las notificaciones locales funcionan
     if (Platform.OS !== "web") {
       try {
-        await Notifications.scheduleNotificationAsync({
+        const notifications = await getNotifications();
+        await notifications?.scheduleNotificationAsync({
           content: {
             title: `Actualización de pedido: ${tracked.orderNumber}`,
             body: message,
@@ -191,6 +200,7 @@ export function useOrderNotifications() {
       // El snackbar seguirá funcionando
       return;
     }
+    const Notifications = require("expo-notifications") as NotificationsModule;
 
     registerForPushNotificationsAsync()
       .then(async (result) => {
@@ -217,8 +227,8 @@ export function useOrderNotifications() {
       });
 
     // Listener para notificaciones recibidas cuando la app está en primer plano
-    let notificationListener: Notifications.Subscription | null = null;
-    let responseListener: Notifications.Subscription | null = null;
+    let notificationListener: NotificationSubscription | null = null;
+    let responseListener: NotificationSubscription | null = null;
 
     try {
       notificationListener = Notifications.addNotificationReceivedListener((notification) => {
@@ -354,10 +364,18 @@ export function useOrderNotifications() {
       };
     }
     try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const notifications = await getNotifications();
+      if (!notifications) {
+        return {
+          token: null,
+          permissionsStatus: "N/A",
+          projectId: "",
+        };
+      }
+      const { status: existingStatus } = await notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
       if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
+        const { status } = await notifications.requestPermissionsAsync();
         finalStatus = status;
       }
       const projectId =
@@ -370,7 +388,7 @@ export function useOrderNotifications() {
           error: "Permisos de notificaciones no concedidos",
         };
       }
-      const result = await Notifications.getExpoPushTokenAsync({ projectId });
+      const result = await notifications.getExpoPushTokenAsync({ projectId });
       const token = result.data;
       if (token) {
         setExpoPushToken(token);
@@ -418,15 +436,19 @@ async function registerForPushNotificationsAsync(): Promise<
   if (Platform.OS === "web" || isExpoGo) {
     return null;
   }
+  const notifications = await getNotifications();
+  if (!notifications) {
+    return null;
+  }
 
   let token: string | null = null;
   let errorMsg: string | undefined;
 
   if (Platform.OS === "android") {
     try {
-      await Notifications.setNotificationChannelAsync("default", {
+      await notifications.setNotificationChannelAsync("default", {
         name: "default",
-        importance: Notifications.AndroidImportance.MAX,
+        importance: notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: "#FF231F7C",
       });
@@ -438,11 +460,11 @@ async function registerForPushNotificationsAsync(): Promise<
   }
 
   try {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -453,7 +475,7 @@ async function registerForPushNotificationsAsync(): Promise<
 
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ?? "8cf6ab93-8443-4163-b138-8764fae210bb";
-    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    token = (await notifications.getExpoPushTokenAsync({ projectId })).data;
     return token ? token : { token: null, error: "Token vacío" };
   } catch (error) {
     errorMsg = error instanceof Error ? error.message : String(error);

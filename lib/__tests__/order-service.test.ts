@@ -84,7 +84,10 @@ describe("OrderService", () => {
 
       expect(orders).toEqual(mockOrderData.data);
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://lcuaqykvynaqtyqofdsv.supabase.co/storage/v1/object/public/datos/datos-ordenes.json"
+        expect.stringContaining(
+          "https://vzpulvvkhralddzwthap.supabase.co/storage/v1/object/public/ordenes/datos-ordenes.json?"
+        ),
+        expect.objectContaining({ method: "GET" })
       );
     });
 

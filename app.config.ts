@@ -27,7 +27,7 @@ const config: ExpoConfig = {
   name: env.appName,
   slug: "foteria-tracking-20",
 
-  version: "1.9.0",
+  version: "2.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -37,7 +37,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "25",
+    buildNumber: "30",
   },
   android: {
     ...(fs.existsSync(path.join(process.cwd(), "google-services.json")) && {
@@ -103,8 +103,9 @@ const config: ExpoConfig = {
       "expo-splash-screen",
       {
         image: "./assets/images/android-icon-foreground.png",
-        imageWidth: 200,
+        imageWidth: 250,
         resizeMode: "contain",
+
         backgroundColor: "#ffffff",
         dark: {
           backgroundColor: "#000000",

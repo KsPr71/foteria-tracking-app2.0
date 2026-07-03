@@ -5,10 +5,69 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { PriceService } from "@/lib/price-service";
 import type { CategoryGroup } from "@/types/price";
+import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+function ProductImage({
+  uri,
+  savings,
+  backgroundColor,
+  mutedColor,
+  savingsColor,
+}: {
+  uri: string;
+  savings?: number | string | null;
+  backgroundColor: string;
+  mutedColor: string;
+  savingsColor: string;
+}) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const savingsLabel =
+    savings === null || savings === undefined || savings === ""
+      ? null
+      : `Ahorra ${String(savings).includes("%") ? savings : `${savings}%`}`;
+
+  return (
+    <View style={[styles.productImageContainer, { backgroundColor }]}>
+      {!hasError ? (
+        <Image
+          source={{ uri }}
+          style={styles.productImage}
+          contentFit="cover"
+          transition={250}
+          cachePolicy="memory-disk"
+          onLoadStart={() => setIsLoading(true)}
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false);
+            setHasError(true);
+          }}
+        />
+      ) : (
+        <View style={styles.productImageFallback}>
+          <IconSymbol name="camera.fill" size={28} color={mutedColor} />
+          <Text style={[styles.productImageFallbackText, { color: mutedColor }]}>
+            Imagen no disponible
+          </Text>
+        </View>
+      )}
+      {isLoading && !hasError && (
+        <View style={styles.productImageLoading}>
+          <ActivityIndicator size="small" color={mutedColor} />
+        </View>
+      )}
+      {savingsLabel && !hasError && (
+        <View style={[styles.savingsRibbon, { backgroundColor: savingsColor }]}>
+          <Text style={styles.savingsRibbonText}>{savingsLabel}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function Contratos() {
   const colors = useColors();
@@ -58,31 +117,31 @@ export default function Contratos() {
     return priceGroups.filter((group) => group.categoria === selectedCategory);
   }, [priceGroups, selectedCategory]);
 
-  // Obtener todas las categorías únicas, con "Ofertas" primero (después de "Todas")
+  // Mantener las categorias principales al inicio del carrusel.
   const categories = useMemo(() => {
     const allCategories = priceGroups.map((group) => group.categoria);
-    const ofertasIndex = allCategories.indexOf("Ofertas");
-    
-    if (ofertasIndex > -1) {
-      // Separar "Ofertas" del resto
-      const ofertas = allCategories[ofertasIndex];
-      const otherCategories = allCategories.filter((cat, index) => index !== ofertasIndex);
-      // Poner "Ofertas" al principio (después de "Todas")
-      return [ofertas, ...otherCategories];
-    }
-    
-    return allCategories;
+    const preferredOrder = ["Ofertas", "Fotografías individuales"];
+    const preferredCategories = preferredOrder.filter((category) =>
+      allCategories.includes(category)
+    );
+    const remainingCategories = allCategories.filter(
+      (category) => !preferredOrder.includes(category)
+    );
+
+    return [...preferredCategories, ...remainingCategories];
   }, [priceGroups]);
 
   return (
-    <ScreenContainer className="p-4">
+    <ScreenContainer>
+      <View style={styles.pageHeader}>
         <PageHeader 
           icon="dollarsign.circle.fill"
           title="Ofertas y servicios"
           subtitle="Consulta todas las opciones disponibles"
         />
+      </View>
 
-      <ScrollView contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 8, flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -183,51 +242,69 @@ export default function Contratos() {
                     {group.productos.map((product, productIndex) => (
                       <View
                         key={productIndex}
-                        style={[
-                          styles.productCard,
-                          { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
-                        ]}
+                        style={styles.productCard}
                       >
-                        <View style={styles.productHeader}>
-                          <ThemedText type="defaultSemiBold" style={styles.productName}>
-                            {product.producto}
-                          </ThemedText>
-                          <View style={[styles.priceBadge, { backgroundColor: colors.primary }]}>
-                            <Text style={styles.priceText}>{formatPrice(product.precio)}</Text>
+                        {product.imagen && (
+                          <ProductImage
+                            uri={product.imagen}
+                            savings={product.ahorro}
+                            backgroundColor={colors.background}
+                            mutedColor={colors.muted}
+                            savingsColor={colors.success}
+                          />
+                        )}
+
+                        <View
+                          style={[
+                            styles.productInfo,
+                            product.imagen && styles.productInfoOverlay,
+                            {
+                              backgroundColor: colors.surface,
+                              borderColor: colors.border,
+                            },
+                          ]}
+                        >
+                          <View style={styles.productHeader}>
+                            <ThemedText type="defaultSemiBold" style={styles.productName}>
+                              {product.producto}
+                            </ThemedText>
+                            <View style={[styles.priceBadge, { backgroundColor: colors.success }]}>
+                              <Text style={styles.priceText}>{formatPrice(product.precio)}</Text>
+                            </View>
                           </View>
+
+                          {product.descripcion && (
+                            <ThemedText style={[styles.productDescription, { color: colors.muted }]}>
+                              {product.descripcion}
+                            </ThemedText>
+                          )}
+
+                          {/* Lista de productos incluidos */}
+                          {product.productos &&
+                           Array.isArray(product.productos) &&
+                           product.productos.length > 0 && (
+                            <View style={[styles.productItemsContainer, { borderTopColor: colors.border }]}>
+                              <View style={styles.productItemsHeader}>
+                                <IconSymbol name="shippingbox.fill" size={18} color={colors.primary} />
+                                <ThemedText type="defaultSemiBold" style={[styles.productItemsTitle, { color: colors.foreground }]}>
+                                  Incluye:
+                                </ThemedText>
+                              </View>
+                              <View style={styles.productItemsList}>
+                                {product.productos.map((item, itemIndex) => (
+                                  <View
+                                    key={itemIndex}
+                                    style={[styles.productItemBadge, { backgroundColor: colors.primary }]}
+                                  >
+                                    <Text style={styles.productItemBadgeText}>
+                                      {item.nombre} {item.cantidad > 1 ? `(x${item.cantidad})` : ''}
+                                    </Text>
+                                  </View>
+                                ))}
+                              </View>
+                            </View>
+                          )}
                         </View>
-
-                        {product.descripcion && (
-                          <ThemedText style={[styles.productDescription, { color: colors.muted }]}>
-                            {product.descripcion}
-                          </ThemedText>
-                        )}
-
-                        {/* Lista de productos incluidos */}
-                        {product.productos && 
-                         Array.isArray(product.productos) && 
-                         product.productos.length > 0 && (
-                          <View style={[styles.productItemsContainer, { borderTopColor: colors.border }]}>
-                            <View style={styles.productItemsHeader}>
-                              <IconSymbol name="shippingbox.fill" size={18} color={colors.primary} />
-                              <ThemedText type="defaultSemiBold" style={[styles.productItemsTitle, { color: colors.foreground }]}>
-                                Incluye:
-                              </ThemedText>
-                            </View>
-                            <View style={styles.productItemsList}>
-                              {product.productos.map((item, itemIndex) => (
-                                <View
-                                  key={itemIndex}
-                                  style={[styles.productItemBadge, { backgroundColor: colors.primary }]}
-                                >
-                                  <Text style={styles.productItemBadgeText}>
-                                    {item.nombre} {item.cantidad > 1 ? `(x${item.cantidad})` : ''}
-                                  </Text>
-                                </View>
-                              ))}
-                            </View>
-                          </View>
-                        )}
                       </View>
                     ))}
                   </View>
@@ -242,19 +319,76 @@ export default function Contratos() {
 }
 
 const styles = StyleSheet.create({
+  pageHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  scrollContent: {
+    paddingVertical: 12,
+    flexGrow: 1,
+  },
   categoryHeader: {
     marginBottom: 12,
     paddingBottom: 8,
+    paddingHorizontal: 16,
   },
   categoryTitle: {
     fontSize: 20,
     fontWeight: "600",
   },
   productCard: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  productImageContainer: {
+    width: "100%",
+    aspectRatio: 4 / 3,
+    overflow: "hidden",
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+  },
+  productImageLoading: {
+    position: "absolute",
+    inset: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productImageFallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  productImageFallbackText: {
+    fontSize: 12,
+  },
+  savingsRibbon: {
+    position: "absolute",
+    top: 20,
+    left: -42,
+    width: 164,
+    paddingVertical: 7,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-38deg" }],
+    boxShadow: "0 3px 8px rgba(0, 0, 0, 0.22)",
+  },
+  savingsRibbonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  productInfo: {
+    marginHorizontal: 16,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 12,
+    boxShadow: "0 5px 16px rgba(0, 0, 0, 0.10)",
+  },
+  productInfoOverlay: {
+    marginTop: -34,
   },
   productHeader: {
     flexDirection: "row",
@@ -338,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   badgesContent: {
-    paddingRight: 8,
+    paddingHorizontal: 16,
     gap: 8,
   },
   categoryBadge: {

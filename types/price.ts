@@ -16,6 +16,8 @@ export interface Product {
   descripcion: string;
   precio: number;
   disponible: boolean;
+  imagen?: string | null;
+  ahorro?: number | string | null;
   productos?: ProductItem[] | string | null;
 }
 

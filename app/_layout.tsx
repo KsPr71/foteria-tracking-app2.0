@@ -23,7 +23,6 @@ import { NotificationsProvider, useNotifications } from "@/contexts/notification
 import { Snackbar } from "@/components/snackbar";
 import { DrawerProvider, useDrawerContext } from "@/contexts/drawer-context";
 import { DrawerMenu } from "@/components/drawer-menu";
-import { BrandedSplash } from "@/components/branded-splash";
 // Importar el archivo de background tasks para que la tarea se defina antes de registrarse
 import "@/lib/background-tasks";
 import { registerBackgroundFetch } from "@/lib/background-tasks";
@@ -41,7 +40,6 @@ export default function RootLayout() {
 
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
-  const [showBrandedSplash, setShowBrandedSplash] = useState(true);
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
@@ -153,10 +151,6 @@ export default function RootLayout() {
       </NotificationsProvider>
     </DrawerProvider>
   );
-
-  if (showBrandedSplash) {
-    return <BrandedSplash onFinish={() => setShowBrandedSplash(false)} />;
-  }
 
   const shouldOverrideSafeArea = Platform.OS === "web";
 

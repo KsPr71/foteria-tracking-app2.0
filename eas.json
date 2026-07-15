@@ -6,6 +6,7 @@
   "build": {
     "development": {
       "environment": "development",
+      "autoIncrement": false,
       "env": {
         "EXPO_PUBLIC_NOTIFICATION_SERVICE_URL": "https://foteria-tracking-app2-0.onrender.com",
         "EXPO_PUBLIC_SUPABASE_URL": "https://lcuaqykvynaqtyqofdsv.supabase.co",
@@ -15,6 +16,7 @@
     },
     "preview": {
       "environment": "preview",
+      "autoIncrement": false,
       "android": {
         "buildType": "apk"
       },
@@ -27,6 +29,7 @@
     },
     "production": {
       "environment": "production",
+      "autoIncrement": false,
       "android": {
         "buildType": "apk"
       },
@@ -39,6 +42,7 @@
     },
     "my-profile": {
       "environment": "production",
+      "autoIncrement": false,
       "env": {
         "EXPO_PUBLIC_NOTIFICATION_SERVICE_URL": "https://foteria-tracking-app2-0.onrender.com",
         "EXPO_PUBLIC_SUPABASE_URL": "https://lcuaqykvynaqtyqofdsv.supabase.co",
